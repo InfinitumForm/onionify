@@ -6,10 +6,13 @@
  * Version:           1.0.0
  * Author:            INFINITUM FORM
  * Author URI:        https://infinitumform.com/
+
  * Text Domain:       tor-onion-support
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * License:           GPLv2 or later
+ * Domain Path:       /languages
+ * Network:           true
  *
  * @package TorOnionSupport
  */

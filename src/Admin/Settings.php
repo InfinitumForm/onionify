@@ -293,14 +293,12 @@ final class Settings
                 }
                 echo '</select>';
 
-                $inherit = is_multisite() ? sprintf(
-                    esc_html__('(Leave unchanged to inherit Network Default: %s)', 'tor-onion-support'),
-                    '<code>' . esc_html($net_val) . '</code>'
-                ) : '';
-
-                echo '<p class="description">' .
-                    esc_html__('Strict = safest (no inline scripts). Relaxed = allow inline scripts. Off = do not send CSP. Custom = send exactly what you enter below.', 'tor-onion-support')
-                    . ' ' . $inherit . '</p>';
+                $inherit_text = is_multisite()
+					? sprintf( esc_html__('(Leave unchanged to inherit Network Default: %s)', 'tor-onion-support'), $net_val )
+					: '';
+				echo '<p class="description">' .
+					esc_html__('Strict = safest (no inline scripts). Relaxed = allow inline scripts. Off = do not send CSP. Custom = send exactly what you enter below.', 'tor-onion-support')
+					. ' ' . esc_html($inherit_text) . '</p>';
 
                 // Short, plain-English tip
                 echo '<p class="description"><em>' . esc_html__('Tip: Start with Strict. If your theme/plugins break (e.g., inline JS), try Relaxed. Use Custom only if you know CSP syntax.', 'tor-onion-support') . '</em></p>';
@@ -427,7 +425,7 @@ form-action 'self';"
     public function renderNetworkPage(): void
     {
         if (!current_user_can('manage_network_options')) {
-            wp_die(__('Sorry, you are not allowed to manage network options.', 'tor-onion-support'));
+            wp_die(esc_html__('Sorry, you are not allowed to manage network options.', 'tor-onion-support'));
         }
 
         $sites = get_sites(['number' => 2000]);
@@ -449,20 +447,23 @@ form-action 'self';"
                     <?php foreach ($sites as $site):
                         $blog_id   = (int) $site->blog_id;
                         $details   = get_blog_details($blog_id);
-                        $home_url  = esc_url($details->home ?? '');
-                        $onion_val = esc_attr($map[$blog_id] ?? '');
+                        $home_url  = $details->home ?? '';
+						$onion_val = $map[$blog_id] ?? '';
                     ?>
                         <tr>
                             <td><?php echo esc_html($details->blogname ?? "Blog #{$blog_id}"); ?> (ID: <?php echo (int) $blog_id; ?>)</td>
-                            <td><code><?php echo $home_url; ?></code></td>
+                            <td><code><?php echo esc_html( esc_url( $home_url ) ); ?></code></td>
                             <td>
-                                <input type="text" class="regular-text" name="tos_onion_map[<?php echo (int) $blog_id; ?>]" placeholder="exampleonionaddress.onion" value="<?php echo $onion_val; ?>">
+                                <input type="text" class="regular-text"
+								   name="tos_onion_map[<?php echo (int) esc_attr( $blog_id ); ?>]"
+								   placeholder="exampleonionaddress.onion"
+								   value="<?php echo esc_attr( $onion_val ); ?>">
                             </td>
                         </tr>
                     <?php endforeach; ?>
                     </tbody>
                 </table>
-                <?php submit_button(__('Save Mapping', 'tor-onion-support')); ?>
+                <?php submit_button(esc_html__('Save Mapping', 'tor-onion-support')); ?>
             </form>
         </div>
         <?php
@@ -471,7 +472,7 @@ form-action 'self';"
     public function saveNetworkSettings(): void
     {
         if (!current_user_can('manage_network_options')) {
-            wp_die(__('Sorry, you are not allowed to manage network options.', 'tor-onion-support'));
+            wp_die(esc_html__('Sorry, you are not allowed to manage network options.', 'tor-onion-support'));
         }
         check_admin_referer('tos_network_save', 'tos_network_nonce');
 
@@ -497,7 +498,7 @@ form-action 'self';"
     public function renderNetworkDefaultsPage(): void
     {
         if (!current_user_can('manage_network_options')) {
-            wp_die(__('Sorry, you are not allowed to manage network options.', 'tor-onion-support'));
+            wp_die(esc_html__('Sorry, you are not allowed to manage network options.', 'tor-onion-support'));
         }
 
         // Effective defaults (site_option-level)
@@ -571,7 +572,7 @@ form-action 'self';"
                     </tr>
                 </table>
 
-                <?php submit_button(__('Save Defaults', 'tor-onion-support')); ?>
+                <?php submit_button(esc_html__('Save Defaults', 'tor-onion-support')); ?>
             </form>
         </div>
         <?php
@@ -580,7 +581,7 @@ form-action 'self';"
     public function saveNetworkDefaults(): void
     {
         if (!current_user_can('manage_network_options')) {
-            wp_die(__('Sorry, you are not allowed to manage network options.', 'tor-onion-support'));
+            wp_die(esc_html__('Sorry, you are not allowed to manage network options.', 'tor-onion-support'));
         }
         check_admin_referer('tos_defaults_save', 'tos_defaults_nonce');
 
@@ -649,26 +650,34 @@ form-action 'self';"
         if (!$screen) {
             return;
         }
-        $screen->add_help_tab([
-            'id'      => 'tos_csp_help',
-            'title'   => __('CSP Help', 'tor-onion-support'),
-            'content' =>
-                '<p><strong>What is CSP?</strong> Content-Security-Policy controls which resources your site is allowed to load. It prevents accidental leaks to clearnet/CDNs in onion mode.</p>' .
-                '<p><strong>Modes:</strong> Strict (safest), Relaxed (allows inline JS), Off (no CSP header), Custom (send exactly what you enter).</p>' .
-                '<p><strong>Quick examples:</strong></p>' .
-                '<pre>default-src \'self\';
-script-src \'self\';
-style-src \'self\' \'unsafe-inline\';
-img-src \'self\' data:;
-font-src \'self\' data:;
-connect-src \'self\';
-frame-src \'self\';
-frame-ancestors \'self\';
-base-uri \'self\';
-form-action \'self\';</pre>' .
-                '<p><em>Tips:</em> If admin bar or theme scripts break, switch to Relaxed or add only what you need. Avoid external CDNs in onion mode whenever possible.</p>',
-        ]);
-    }
+		$title = esc_html__( 'CSP Help', 'tor-onion-support' );
+		$content  = '<p><strong>' . esc_html__( 'What is CSP?', 'tor-onion-support' ) . '</strong> '
+				  . esc_html__( 'Content-Security-Policy controls which resources your site is allowed to load. It prevents accidental leaks to clearnet/CDNs in onion mode.', 'tor-onion-support' )
+				  . '</p>';
+		$content .= '<p><strong>' . esc_html__( 'Modes:', 'tor-onion-support' ) . '</strong> '
+				  . esc_html__( 'Strict (safest), Relaxed (allows inline JS), Off (no CSP header), Custom (send exactly what you enter).', 'tor-onion-support' )
+				  . '</p>';
+		$content .= '<p><strong>' . esc_html__( 'Quick examples:', 'tor-onion-support' ) . "</strong></p>"
+				  . '<pre>' . esc_html(
+		"default-src 'self';
+		script-src 'self';
+		style-src 'self' 'unsafe-inline';
+		img-src 'self' data:;
+		font-src 'self' data:;
+		connect-src 'self';
+		frame-src 'self';
+		frame-ancestors 'self';
+		base-uri 'self';
+		form-action 'self';"
+				  ) . '</pre>';
+		$content .= '<p><em>' . esc_html__( 'Tips: If admin bar or theme scripts break, switch to Relaxed or add only what you need. Avoid external CDNs in onion mode whenever possible.', 'tor-onion-support' ) . '</em></p>';
+
+		$screen->add_help_tab([
+			'id'      => 'tos_csp_help',
+			'title'   => $title,
+			'content' => wp_kses_post( $content ),
+		]);
+	}
 
     /**
      * Add contextual help tab for network pages (mapping/defaults).
@@ -679,12 +688,18 @@ form-action \'self\';</pre>' .
         if (!$screen) {
             return;
         }
-        $screen->add_help_tab([
-            'id'    => 'tos_network_help',
-            'title' => __('Network Defaults & Mapping', 'tor-onion-support'),
-            'content' =>
-                '<p><strong>Network Defaults</strong> apply to all sites that did not set their own values. A site may override any default in its own Settings &rarr; Tor / .onion page.</p>' .
-                '<p><strong>Mapping</strong> lets you assign a specific .onion host per site. If a site has no mapping, it may still use the global Default .onion domain.</p>',
-        ]);
+        $title = esc_html__( 'Network Defaults & Mapping', 'tor-onion-support' );
+		$content  = '<p><strong>' . esc_html__( 'Network Defaults', 'tor-onion-support' ) . '</strong> '
+				  . esc_html__( 'apply to all sites that did not set their own values. A site may override any default in its own Settings → Tor / .onion page.', 'tor-onion-support' )
+				  . '</p>';
+		$content .= '<p><strong>' . esc_html__( 'Mapping', 'tor-onion-support' ) . '</strong> '
+				  . esc_html__( 'lets you assign a specific .onion host per site. If a site has no mapping, it may still use the global Default .onion domain.', 'tor-onion-support' )
+				  . '</p>';
+
+		$screen->add_help_tab([
+			'id'      => 'tos_network_help',
+			'title'   => $title,
+			'content' => wp_kses_post( $content ),
+		]);
     }
 }

@@ -1,5 +1,5 @@
 === Tor Onion Support ===
-Contributors: infinitumform
+Contributors: ivijanstefan
 Tags: tor, onion, privacy, multisite, security, csp, wp-cli
 Requires at least: 6.0
 Tested up to: 6.6
@@ -7,6 +7,8 @@ Requires PHP: 7.4
 Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
+
+Tor Onion Support provides clean, conservative, and WordPress.org-compliant support for serving WordPress sites through Tor hidden services (.onion).
 
 == Description ==
 
