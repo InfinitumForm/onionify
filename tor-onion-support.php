@@ -1,20 +1,12 @@
 <?php
 /**
- * Plugin Name:       Tor Onion Support
- * Plugin URI:        https://wordpress.org/plugins/tor-onion-support/
- * Description:       Seamless .onion support for WordPress and Multisite without core modifications. Sets URLs, headers, and canonical behavior for Tor hidden services.
- * Version:           1.0.0
- * Author:            INFINITUM FORM
- * Author URI:        https://infinitumform.com/
-
- * Text Domain:       tor-onion-support
- * Requires at least: 6.0
- * Requires PHP:      7.4
- * License:           GPLv2 or later
- * Domain Path:       /languages
- * Network:           true
- *
- * @package TorOnionSupport
+ * Plugin Name: Tor Onion Support
+ * Description: Serve WordPress cleanly over .onion with URL rewriting, Onion-Location, and privacy hardening.
+ * Version: 1.0.0
+ * Author: INFINITUM FORM
+ * License: GPLv2 or later
+ * Text Domain: tor-onion-support
+ * Domain Path: /languages
  */
 
 if (!defined('ABSPATH')) {
@@ -40,13 +32,4 @@ spl_autoload_register(function ($class) {
 add_action('plugins_loaded', static function () {
     // Bootstrap the plugin after all plugins are loaded.
     (new \TorOnionSupport\Bootstrap())->init();
-});
-
-// Load text domain for translations (WP.org ready).
-add_action('init', static function () {
-    load_plugin_textdomain(
-        'tor-onion-support',
-        false,
-        dirname(plugin_basename(__FILE__)) . '/languages'
-    );
 });
