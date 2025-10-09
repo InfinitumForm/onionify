@@ -149,13 +149,6 @@ GPLv2 or later
 
 ---
 
-## 💬 Support
-
-- WordPress.org Support Forum – *Recommended for public questions*  
-- Commercial inquiries: [infinitumform.com/contact](https://infinitumform.com/contact)  
-
----
-
 ### 🌐 Related References
 
 - [Tor proxies in WordPress (make.wordpress.org)](https://make.wordpress.org/support/2014/02/tor-proxies-in-wordpress/)
@@ -164,5 +157,12 @@ GPLv2 or later
 
 ---
 
-> “Privacy is not hiding — it’s choosing what to reveal.”  
-> — *INFINITUM FORM, Tor Onion Support*
+## 🧑‍💻 Author
+
+**Ivijan-Stefan Stipić**  
+Founder & Lead Developer  
+[INFINITUM FORM®](https://infinitumform.com)  
+📧 infinitumform@gmail.com  
+🌍 https://infinitumform.com
+
+Specialized in secure WordPress architecture, plugin engineering, and performance optimization with 20+ years of full-stack development experience.
