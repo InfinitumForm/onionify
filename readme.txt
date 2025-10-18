@@ -1,6 +1,6 @@
-=== Tor Onion Support ===
+=== Onionify ===
 Contributors: ivijanstefan
-Tags: tor, onion, privacy, multisite, security, csp, wp-cli
+Tags: onion, privacy, multisite, security, csp, wp-cli, tor
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 7.4
@@ -8,11 +8,11 @@ Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Tor Onion Support provides clean, conservative, and WordPress.org-compliant support for serving WordPress sites through Tor hidden services (.onion).
+Onionify provides clean, conservative, and WordPress.org-compliant support for serving WordPress sites through Tor hidden services (.onion).
 
 == Description ==
 
-Tor Onion Support provides clean, conservative, and WordPress.org-compliant support for serving WordPress sites through Tor hidden services (.onion). 
+Onionify provides clean, conservative, and WordPress.org-compliant support for serving WordPress sites through Tor hidden services (.onion). 
 It rewrites runtime URLs when requests arrive via .onion, avoids canonical redirects that would leak visitors from onion -> clearnet, optionally advertises an Onion-Location header, and supplies privacy-focused "hardening" (CSP, COEP, resource-hint tightening, oEmbed disable) specifically for onion visitors.
 
 The plugin is designed to be safe for distribution on WordPress.org:

@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Tor Onion Support
+ * Plugin Name: Onionify
  * Description: Serve WordPress cleanly over .onion with URL rewriting, Onion-Location, and privacy hardening.
  * Version: 1.0.0
  * Author: INFINITUM FORM
