@@ -1,14 +1,18 @@
 <?php
 
-namespace TorOnionSupport;
+namespace Onionify;
 
-use TorOnionSupport\Admin\Settings;
-use TorOnionSupport\Domain\Detector;
-use TorOnionSupport\Domain\Mapping;
-use TorOnionSupport\Http\Headers;
-use TorOnionSupport\Http\Loopback;
-use TorOnionSupport\Url\Rewrite;
-use TorOnionSupport\Security\Hardening;
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+use Onionify\Admin\Settings;
+use Onionify\Domain\Detector;
+use Onionify\Domain\Mapping;
+use Onionify\Http\Headers;
+use Onionify\Http\Loopback;
+use Onionify\Url\Rewrite;
+use Onionify\Security\Hardening;
 
 /**
  * Bootstrap coordinates plugin initialization.
@@ -61,7 +65,7 @@ final class Bootstrap
 
         // WP-CLI commands (only if WP_CLI present).
         if (defined('WP_CLI') && WP_CLI) {
-            \WP_CLI::add_command('tor-onion', \TorOnionSupport\Cli\Commands::class);
+            \WP_CLI::add_command('tor-onion', \Onionify\Cli\Commands::class);
         }
     }
 }

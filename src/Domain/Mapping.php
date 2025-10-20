@@ -1,12 +1,16 @@
 <?php
 
-namespace TorOnionSupport\Domain;
+namespace Onionify\Domain;
+
+if (!defined('ABSPATH')) {
+    exit;
+}
 
 /**
  * Mapping resolves clearnet <-> onion aliases.
  *
- * - Single site: get_option('tos_onion_domain')
- * - Multisite:   site_option 'tos_onion_map' as [blog_id => onionHost]
+ * - Single site: get_option('onionify_onion_domain')
+ * - Multisite:   site_option 'onionify_onion_map' as [blog_id => onionHost]
  */
 final class Mapping
 {
@@ -24,13 +28,13 @@ final class Mapping
     public function onionHostForCurrentSite(): ?string
     {
         if (is_multisite()) {
-            $map = get_site_option('tos_onion_map', []);
+            $map = get_site_option('onionify_onion_map', []);
             $blog_id = get_current_blog_id();
             $host = $map[$blog_id] ?? '';
             return $host ? strtolower($host) : null;
         }
 
-        $single = (string) get_option('tos_onion_domain', '');
+        $single = (string) get_option('onionify_onion_domain', '');
         return $single ? strtolower($single) : null;
     }
 

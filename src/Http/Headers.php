@@ -1,9 +1,13 @@
 <?php
 
-namespace TorOnionSupport\Http;
+namespace Onionify\Http;
 
-use TorOnionSupport\Domain\Detector;
-use TorOnionSupport\Domain\Mapping;
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+use Onionify\Domain\Detector;
+use Onionify\Domain\Mapping;
 
 /**
  * Headers adds Onion-Location and optional security headers.
@@ -29,7 +33,7 @@ final class Headers
         }
 
         // Advertise Onion-Location from clearnet if enabled and mapping is set.
-        if ($this->detector->isClearnetRequest() && get_option('tos_send_onion_location', true)) {
+        if ($this->detector->isClearnetRequest() && get_option('onionify_send_onion_location', true)) {
             $onion = $this->mapping->onionHostForCurrentSite();
             if ($onion) {
                 $request_uri = $_SERVER['REQUEST_URI'] ?? '/';
@@ -39,14 +43,14 @@ final class Headers
         }
 
         // Only send hardening headers for onion requests and if enabled.
-        if ($this->detector->isOnionRequest() && get_option('tos_enable_hardening', false)) {
+        if ($this->detector->isOnionRequest() && get_option('onionify_enable_hardening', false)) {
             // Baseline isolation headers.
             header('Cross-Origin-Embedder-Policy: same-origin');
             header('Cross-Origin-Resource-Policy: same-origin');
             header('X-Frame-Options: SAMEORIGIN');
 
             // Content-Security-Policy based on admin setting.
-            $mode = (string) get_option('tos_hardening_csp_mode', 'strict'); // strict|relaxed|off|custom
+            $mode = (string) get_option('onionify_hardening_csp_mode', 'strict'); // strict|relaxed|off|custom
             $csp  = '';
 
             if ($mode === 'strict') {
@@ -56,7 +60,7 @@ final class Headers
                 // Allow inline script too (legacy themes/plugins).
                 $csp = "default-src 'self'; img-src 'self' data:; media-src 'self'; font-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'";
             } elseif ($mode === 'custom') {
-                $custom = (string) get_option('tos_hardening_csp_custom', '');
+                $custom = (string) get_option('onionify_hardening_csp_custom', '');
                 $csp    = trim($custom);
             }
 

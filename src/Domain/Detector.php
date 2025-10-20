@@ -1,6 +1,10 @@
 <?php
 
-namespace TorOnionSupport\Domain;
+namespace Onionify\Domain;
+
+if (!defined('ABSPATH')) {
+    exit;
+}
 
 /**
  * Detector handles TOR / .onion request detection safely across CDNs and proxies.
@@ -9,7 +13,7 @@ namespace TorOnionSupport\Domain;
  * - Direct .onion host detection
  * - Proxy/CDN header inspection (CF-Connecting-IP, X-Forwarded-For, etc.)
  * - Optional Tor exit list verification (disabled by default)
- * - Filter hook: tor_onion_is_tor_request
+ * - Filter hook: onion_is_onion_request
  * - PHP 7.4+ compatible (works on PHP 8.x)
  */
 final class Detector
@@ -19,7 +23,7 @@ final class Detector
      */
     public function currentHost(): string
     {
-        $host = $_SERVER['HTTP_HOST'] ?? ($_SERVER['SERVER_NAME'] ?? '');
+        $host = sanitize_text_field($_SERVER['HTTP_HOST'] ?? ($_SERVER['SERVER_NAME'] ?? ''));
         return strtolower(trim((string) $host));
     }
 
@@ -66,7 +70,7 @@ final class Detector
              * @param bool  $isTor  Current decision.
              * @param array $server Copy of $_SERVER.
              */
-            $isTor = (bool) apply_filters('tor_onion_is_tor_request', $isTor, $_SERVER);
+            $isTor = (bool) apply_filters('onion_is_onion_request', $isTor, $_SERVER);
 
             return $isTor;
         } catch (\Throwable $e) {
@@ -184,19 +188,19 @@ final class Detector
      * Should we consult the official Tor exit list?
      * - Disabled by default for performance/privacy.
      * - Enable via:
-     *     define('TOS_VERIFY_TOR_EXIT', true);
+     *     define('ONIONIFY_VERIFY_ONION_EXIT', true);
      *   or filter:
-     *     add_filter('tor_onion_verify_exit_list', '__return_true');
+     *     add_filter('onion_verify_exit_list', '__return_true');
      */
     private function shouldVerifyExitList(): bool
     {
-        $allow = defined('TOS_VERIFY_TOR_EXIT') && TOS_VERIFY_TOR_EXIT;
+        $allow = defined('ONIONIFY_VERIFY_ONION_EXIT') && ONIONIFY_VERIFY_ONION_EXIT;
         /**
          * Allow enabling/disabling exit-list verification.
          *
          * @param bool $allow Current decision (default false).
          */
-        return (bool) apply_filters('tor_onion_verify_exit_list', $allow);
+        return (bool) apply_filters('onion_verify_exit_list', $allow);
     }
 
     /**
@@ -206,7 +210,7 @@ final class Detector
     private function isTorExitNode(string $ip): bool
     {
         // Use a cached blob of the exit list to avoid fetching on every request.
-        $blob = get_transient('tor_onion_exit_list_blob');
+        $blob = get_transient('onion_exit_list_blob');
         if (!is_string($blob) || $blob === '') {
             // If we are not allowed or wp_remote_get is unavailable, skip.
             if (!$this->httpAvailable() || !$this->respectExternalHttpPolicy()) {
@@ -217,7 +221,7 @@ final class Detector
             if (!is_string($blob) || $blob === '') {
                 return false;
             }
-            set_transient('tor_onion_exit_list_blob', $blob, DAY_IN_SECONDS);
+            set_transient('onion_exit_list_blob', $blob, DAY_IN_SECONDS);
         }
 
         // Cheap membership test
@@ -251,7 +255,7 @@ final class Detector
                 'sslverify' => true,
                 'reject_unsafe_urls' => true,
                 'headers' => [
-                    'User-Agent' => 'TorOnionSupport/1.0 (+https://wordpress.org/)',
+                    'User-Agent' => 'Onionify/1.0 (+https://wordpress.org/)',
                 ],
             ];
             $resp = wp_remote_get('https://check.torproject.org/exit-addresses', $args);

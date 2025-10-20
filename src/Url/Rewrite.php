@@ -1,9 +1,13 @@
 <?php
 
-namespace TorOnionSupport\Url;
+namespace Onionify\Url;
 
-use TorOnionSupport\Domain\Detector;
-use TorOnionSupport\Domain\Mapping;
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+use Onionify\Domain\Detector;
+use Onionify\Domain\Mapping;
 
 /**
  * Rewrite normalizes URLs/options to the onion domain when applicable.

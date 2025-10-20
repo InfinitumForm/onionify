@@ -3,9 +3,10 @@
  * Plugin Name: Onionify
  * Description: Serve WordPress cleanly over .onion with URL rewriting, Onion-Location, and privacy hardening.
  * Version: 1.0.0
- * Author: INFINITUM FORM
+ * Author: Ivijan-Stefan Stipić
+ * Author URI: https://www.linkedin.com/in/ivijanstefanstipic/
  * License: GPLv2 or later
- * Text Domain: tor-onion-support
+ * Text Domain: onionify
  * Domain Path: /languages
  */
 
@@ -15,7 +16,7 @@ if (!defined('ABSPATH')) {
 
 // Simple PSR-4 autoloader for this plugin.
 spl_autoload_register(function ($class) {
-    $prefix   = 'TorOnionSupport\\';
+    $prefix   = 'Onionify\\';
     $base_dir = __DIR__ . '/src/';
     $len      = strlen($prefix);
 
@@ -29,7 +30,7 @@ spl_autoload_register(function ($class) {
     }
 });
 
+// Bootstrap the plugin after all plugins are loaded.
 add_action('plugins_loaded', static function () {
-    // Bootstrap the plugin after all plugins are loaded.
-    (new \TorOnionSupport\Bootstrap())->init();
+    (new \Onionify\Bootstrap())->init();
 });

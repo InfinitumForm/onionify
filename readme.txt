@@ -8,47 +8,48 @@ Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Onionify provides clean, conservative, and WordPress.org-compliant support for serving WordPress sites through Tor hidden services (.onion).
+Onionify provides privacy-friendly, security-enhanced, and WordPress.org-compliant support for serving WordPress sites through onion services (.onion).
 
 == Description ==
 
-Onionify provides clean, conservative, and WordPress.org-compliant support for serving WordPress sites through Tor hidden services (.onion). 
-It rewrites runtime URLs when requests arrive via .onion, avoids canonical redirects that would leak visitors from onion -> clearnet, optionally advertises an Onion-Location header, and supplies privacy-focused "hardening" (CSP, COEP, resource-hint tightening, oEmbed disable) specifically for onion visitors.
+Onionify is an independent plugin that enables WordPress websites to operate seamlessly through onion services (.onion).
 
-The plugin is designed to be safe for distribution on WordPress.org:
-- No core hacks.
-- Uses filters/actions only.
-- Multisite-aware (per-site mapping + network defaults).
-- Optional WP-CLI tools for admins.
-- Localization-ready (textdomain: tor-onion-support).
+This plugin is not affiliated with or endorsed by the Tor Project.
+
+Onionify adds safe and standards-compliant integration for onion access — rewriting runtime URLs when requests arrive via .onion, preventing canonical redirects that might expose onion visitors to the clearnet, optionally adding the official Onion-Location HTTP header, and applying additional privacy-hardening measures (CSP, COEP, oEmbed and resource hints control) specifically for onion traffic.
+
+The plugin follows WordPress.org guidelines and is designed for secure public distribution:
+
+- No modifications to WordPress core.
+- Uses WordPress filters and actions only.
+- Fully compatible with multisite environments (per-site mappings and network defaults).
+- Optional WP-CLI integration for advanced administration.
 
 === ⚠ IMPORTANT WARNING ===
 
-⚠ BEWARE: If you are trying to make your WordPress site available **only** on the darknet to preserve the anonymity of your server and hosting provider, **then this plugin is NOT for you!**
-
-This plugin does **not** hide your server’s hosting provider, network infrastructure, or administrative metadata. It helps WordPress behave correctly when *visitors* connect via .onion addresses (URL rewriting, headers, CSP and optional checks), but it does **not** anonymize, obfuscate, or otherwise protect your server infrastructure from being discovered. If your goal is to hide or anonymize server hosting information, consult Tor Project documentation and threat-modeling specialists first.
+⚠ Warning: This plugin does not provide hosting-level anonymity or concealment of infrastructure. Onionify helps WordPress handle requests that arrive via onion service addresses, but it does not change or hide server configuration, hosting provider information, or other infrastructure-level metadata. If you require infrastructure-level protections or specialized operational procedures, consult authoritative technical documentation and qualified operational security professionals. Do not rely on this plugin for legal compliance or for anonymizing hosting details.
 
 == Features ==
 
-* Detects .onion requests and rewrites generated WordPress URLs to the configured onion host at runtime.
-* Does not modify database `home`/`siteurl` values — rewrites are runtime-only.
-* Multisite support: per-site .onion mapping (Network Admin) plus Network Defaults.
-* Sends Onion-Location header from clearnet (optional) so browsers / Tor Browser can suggest the onion mirror.
-* Optional privacy hardening when serving .onion (CSP, COEP, X-Frame-Options, disable oEmbed, remove resource hints).
-* Optional verification against Tor Project's official exit-addresses list (opt-in).
-* WP-CLI commands to list/map onion hosts and toggle settings.
-* Filter hooks for extensibility (including `tor_onion_is_tor_request` and `tor_onion_verify_exit_list`).
-* Sanity-checked, defensive code compatible with PHP 7.4 — 8.x.
+* Detects .onion requests and safely rewrites generated WordPress URLs to the configured onion host at runtime.
+* Does not modify database `home` or `siteurl` values — all rewrites occur at runtime only.
+* Multisite support: per-site onion mapping (via Network Admin) and configurable Network Defaults.
+* Optionally sends the Onion-Location header from the clearnet site to help browsers recognize the onion mirror.
+* Optional privacy enhancements for onion visitors (CSP, COEP, X-Frame-Options, disable oEmbed, and tighten resource hints).
+* Optional verification feature using a public list of known Tor exit addresses (opt-in only).
+* Includes WP-CLI commands to list, map, and manage onion host configurations.
+* Provides filter hooks for extensibility (including `onion_is_onion_request` and `onion_verify_exit_list`).
+* Carefully validated, defensive code compatible with PHP 7.4 — 8.x.
 
 == Installation ==
 
-1. Upload the `tor-onion-support` folder to the `/wp-content/plugins/` directory.
+1. Upload the `onionify` folder to the `/wp-content/plugins/` directory.
 2. Activate the plugin through the 'Plugins' screen in WordPress.
 3. (Single-site) Go to Settings → Tor / .onion and enter your `.onion` host (host only, e.g. `abcd1234xyz.onion`) and optional hardening settings.
 4. (Multisite) Network Admin → Tor / .onion → use the **Mapping** page to map each site to its onion host, and optionally set **Network Defaults** on the Defaults submenu.
 5. (Optional) To verify IPs against the official Tor exit list enable verification:
    * Add `define('TOS_VERIFY_TOR_EXIT', true);` to `wp-config.php`, or
-   * Add `add_filter('tor_onion_verify_exit_list', '__return_true');` in a mu-plugin or theme functions file.
+   * Add `add_filter('onion_verify_exit_list', '__return_true');` in a mu-plugin or theme functions file.
    Note: verification is **opt-in** and cached for 24 hours. If your environment disables external HTTP calls, keep verification disabled.
 
 == Quick usage (WP-CLI) ==
@@ -118,12 +119,12 @@ font-src 'self' https://cdn.example.com data:;
 
 == Filters & constants (developer) ==
 
-* `apply_filters('tor_onion_is_tor_request', bool $is_tor, array $server)`  
+* `apply_filters('onion_is_onion_request', bool $is_tor, array $server)`  
   Allows other plugins/themes to override detection. `$server` is a copy of `$_SERVER`.
-* `apply_filters('tor_onion_verify_exit_list', bool $default)`  
+* `apply_filters('onion_verify_exit_list', bool $default)`  
   Controls whether the plugin will verify IPs against the Tor exit list. Disabled by default.
 * `define('TOS_VERIFY_TOR_EXIT', true);` — alternative to enable exit-list verification in `wp-config.php`.
-* `tor_onion_support_*` option names used by the plugin: see Settings page. The plugin cleans up these options on uninstall.
+* `onion_support_*` option names used by the plugin: see Settings page. The plugin cleans up these options on uninstall.
 
 == Uninstall / cleanup ==
 
@@ -135,32 +136,29 @@ If you do not want automatic cleanup, do not use the admin "Delete" action; deac
 
 == Privacy, security, and limitations (be explicit) ==
 
-* This plugin **only** changes WordPress behavior (URL outputs, certain headers, CSP, resource hint control) depending on how the visitor connects to the site (clearnet vs .onion).  
-* It does **not** anonymize or hide server metadata: IP address of the hosting provider, DNS records for clearnet domains, or other infra-level information remain unchanged. If you need to hide server infrastructure, you must design your hosting and network setup for that purpose — this plugin is **not** a substitute for that.
-* Enabling the Tor exit-list verification triggers external HTTP requests to `check.torproject.org` (only if you opt-in). If your environment blocks external HTTP requests, enable verification via `WP-CLI` or `wp-config.php` only after ensuring allowed hosts are set appropriately.
-* The plugin tries to be conservative and privacy-preserving by default: critical external calls are opt-in and hardening defaults aim to reduce third-party resource loads for onion visitors.
+* This plugin **only** adjusts WordPress behavior (URL outputs, selected headers, CSP, and resource hint handling) based on how visitors access the site (clearnet vs .onion).
+* It does **not** anonymize or conceal server infrastructure details. Information such as hosting provider IP addresses, DNS records for clearnet domains, or other infrastructure-level metadata remains unchanged. Onionify is **not** designed or intended to provide anonymity or infrastructure concealment.
+* Enabling the optional exit-address verification feature performs external HTTP requests to a trusted public source (only when explicitly opted in). If your hosting environment restricts outbound HTTP requests, use the WP-CLI interface or `wp-config.php` configuration after verifying your allowed hosts.
+* The plugin operates with a privacy-first design: external requests are disabled by default, and its default configuration aims to reduce unnecessary third-party requests for onion visitors.
 
 == Frequently Asked Questions ==
 
-= Q: Will this make my site “only available on Tor”? =
-A: No. The plugin does not change hosting, DNS, or server-level routing. It changes WordPress behavior when the incoming request appears to be via .onion or Tor. If you need a site that is exclusively reachable via Tor with no clearnet footprint, this plugin alone is insufficient.
+= Q: Will this make my site available only through an onion address? =
+A: No. The plugin does not modify hosting, DNS, or server-level routing. It simply adjusts WordPress behavior when incoming requests originate from an onion address. If you want a site that is accessible exclusively via onion services with no clearnet presence, that requires additional server and network configuration beyond this plugin.
 
 = Q: I use a CDN like Cloudflare — will this work? =
-A: The plugin inspects common headers (e.g., `CF-Connecting-IP`, `X-Forwarded-For`) to try to detect Tor-origin requests behind CDNs. It also allows other plugins to alter detection via the `tor_onion_is_tor_request` filter. If your CDN rewrites or strips headers, adjust your network configuration to forward real client IP headers to WordPress.
+A: The plugin inspects common headers (for example, `CF-Connecting-IP` and `X-Forwarded-For`) to help detect onion-origin requests behind CDNs. It also provides the `onion_is_onion_request` filter for integrations with other plugins. If your CDN modifies or removes headers, adjust your CDN or proxy settings so that the real client IP headers are passed through to WordPress.
 
 = Q: What happens if I enable Custom CSP but make a mistake? =
-A: If the Custom CSP is invalid or too strict, parts of your site (including admin pages) may break. The plugin will send **exactly** the text you enter. Use Custom CSP only if you understand CSP rules. Start by testing on staging.
+A: If the Custom CSP is invalid or overly restrictive, some parts of your site (including the admin area) may stop functioning properly. The plugin will send **exactly** the CSP string you provide. Use this feature only if you understand Content Security Policy rules, and test changes on a staging or development site first.
 
-= Q: Does plugin change database `home` or `siteurl`? =
-A: No. It returns rewritten URLs at runtime only. Database options remain unchanged.
+= Q: Does the plugin change database `home` or `siteurl` values? =
+A: No. The plugin returns rewritten URLs dynamically at runtime. Database values remain unchanged.
 
-= Q: How do I disable the Tor exit list check? =
-A: It is disabled by default. Do nothing. To enable, add `define('TOS_VERIFY_TOR_EXIT', true);` to `wp-config.php` or use the filter `add_filter('tor_onion_verify_exit_list', '__return_true');`.
+= Q: How do I enable or disable the exit-address verification check? =
+A: The feature is disabled by default. No action is required to keep it off. To enable it, add `define('ONS_VERIFY_EXIT_ADDRESSES', true);` to your `wp-config.php` file or use the filter `add_filter('onion_verify_exit_list', '__return_true');`.
 
 == Screenshots ==
-1. Settings page (single-site): enter .onion host and hardening toggles.
-2. Network mapping page (multisite): map blog IDs to onion hosts.
-3. Network defaults page: set defaults used by all sites.
 
 == Changelog ==
 

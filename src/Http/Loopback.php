@@ -1,9 +1,13 @@
 <?php
 
-namespace TorOnionSupport\Http;
+namespace Onionify\Http;
 
-use TorOnionSupport\Domain\Detector;
-use TorOnionSupport\Domain\Mapping;
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+use Onionify\Domain\Detector;
+use Onionify\Domain\Mapping;
 
 /**
  * Loopback safely reroutes internal HTTP (cron, REST, admin-ajax) from .onion to clearnet host.
@@ -52,7 +56,7 @@ final class Loopback
         if (!$this->detector->isOnionRequest()) {
             return $pre;
         }
-        if (!get_option('tos_loopback_reroute', true)) {
+        if (!get_option('onionify_loopback_reroute', true)) {
             return $pre;
         }
 
@@ -101,7 +105,7 @@ final class Loopback
         if (!$this->detector->isOnionRequest()) {
             return $cron;
         }
-        if (!get_option('tos_loopback_reroute', true)) {
+        if (!get_option('onionify_loopback_reroute', true)) {
             return $cron;
         }
 

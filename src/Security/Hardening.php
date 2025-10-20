@@ -1,9 +1,13 @@
 <?php
 
-namespace TorOnionSupport\Security;
+namespace Onionify\Security;
 
-use TorOnionSupport\Domain\Detector;
-use TorOnionSupport\Domain\Mapping;
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+use Onionify\Domain\Detector;
+use Onionify\Domain\Mapping;
 
 /**
  * Hardening applies onion-specific privacy/security measures.
@@ -30,12 +34,12 @@ final class Hardening
             if (!$this->detector->isOnionRequest()) {
                 return;
             }
-            if (!get_option('tos_enable_hardening', false)) {
+            if (!get_option('onionify_enable_hardening', false)) {
                 return;
             }
 
             // Optionally disable oEmbed & external embeds.
-            if (get_option('tos_disable_oembed', true)) {
+            if (get_option('onionify_disable_oembed', true)) {
                 $this->disableEmbeds();
             }
 
@@ -45,7 +49,7 @@ final class Hardening
             // Optional: disable emojis (external calls to s.w.org).
             $this->disableEmojis();
 			
-			if (get_option('tos_disable_external_avatars', false)) {
+			if (get_option('onionify_disable_external_avatars', false)) {
 				add_filter('get_avatar_url', function ($url, $id_or_email, $args) {
 					// Replace any external avatar with local 1x1 transparent pixel.
 					// Avoids calls to gravatar.com or other third-party hosts.
