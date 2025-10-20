@@ -23,8 +23,9 @@ final class Detector
      */
     public function currentHost(): string
     {
-        $host = sanitize_text_field($_SERVER['HTTP_HOST'] ?? ($_SERVER['SERVER_NAME'] ?? ''));
-        return strtolower(trim((string) $host));
+        $raw  = $_SERVER['HTTP_HOST'] ?? ($_SERVER['SERVER_NAME'] ?? '');
+        $host = sanitize_text_field( (string) wp_unslash( $raw ) );
+        return strtolower(trim($host));
     }
 
     /**
@@ -42,9 +43,9 @@ final class Detector
             }
 
             // 2) Headers (Tor2Web / custom)
-            $S = $this->getServerUpper();
+            $S = $this->getServerUpper(); // sanitized, uppercased copy of $_SERVER
             foreach (['X-TOR-EXIT-NODE','X-TOR2WEB','X-TOR-USER','X-TOR-ORIGIN'] as $h) {
-                if (isset($S[$h])) {
+                if (isset($S[$h]) && $S[$h] !== '') {
                     $isTor = true;
                     break;
                 }
@@ -68,9 +69,9 @@ final class Detector
              * Allow 3rd-parties to override/extend detection.
              *
              * @param bool  $isTor  Current decision.
-             * @param array $server Copy of $_SERVER.
+             * @param array $server Sanitized copy of $_SERVER (uppercased keys).
              */
-            $isTor = (bool) apply_filters('onion_is_onion_request', $isTor, $_SERVER);
+            $isTor = (bool) apply_filters('onion_is_onion_request', $isTor, $S);
 
             return $isTor;
         } catch (\Throwable $e) {
@@ -91,12 +92,21 @@ final class Detector
      * Internals (defensive)
      * ------------------------------------------------------------------ */
 
+    /**
+     * Return a sanitized, uppercased-key copy of $_SERVER with only string values.
+     * - Uses wp_unslash() and sanitize_text_field() on each string value.
+     */
     private function getServerUpper(): array
     {
         $out = [];
         foreach ($_SERVER as $k => $v) {
-            if (is_string($k)) {
-                $out[strtoupper($k)] = $v;
+            if (!is_string($k)) {
+                continue;
+            }
+            if (is_string($v)) {
+                $sv = sanitize_text_field( (string) wp_unslash( $v ) );
+				$sv = preg_replace('/[\x00-\x1F\x7F]/', '', $sv);
+                $out[strtoupper($k)] = $sv;
             }
         }
         return $out;
@@ -113,16 +123,17 @@ final class Detector
 
     /**
      * Best-effort client IP extraction (CDN/proxy aware).
+     * Expects sanitized/uppercased server array $S from getServerUpper().
      */
     private function getClientIp(array $S): ?string
     {
         // Prefer provider headers:
         $candidates = [
             $S['CF_CONNECTING_IP'] ?? null,   // Cloudflare
-            $S['TRUE_CLIENT_IP'] ?? null,     // Akamai
+            $S['TRUE_CLIENT_IP']   ?? null,   // Akamai
             $this->firstPublicFromXff($S['X_FORWARDED_FOR'] ?? null),
-            $S['X_REAL_IP'] ?? null,
-            $_SERVER['REMOTE_ADDR'] ?? null,
+            $S['X_REAL_IP']        ?? null,
+            $S['REMOTE_ADDR']      ?? null,
         ];
         foreach ($candidates as $ip) {
             if (is_string($ip) && $ip !== '') {
@@ -143,9 +154,13 @@ final class Detector
         if (!is_string($xff) || $xff === '') {
             return null;
         }
-        $parts = array_map('trim', explode(',', $xff));
+
+        // Already sanitized at getServerUpper(); still normalize whitespace here.
+        $xff = preg_replace('/[\x00-\x1F\x7F]/', '', $xff);
+        $parts = explode(',', (string) $xff);
+
         foreach ($parts as $p) {
-            if (filter_var($p, FILTER_VALIDATE_IP) && !$this->isPrivateIp($p)) {
+            if ($p !== '' && filter_var($p, FILTER_VALIDATE_IP) && !$this->isPrivateIp($p)) {
                 return $p;
             }
         }
@@ -251,13 +266,15 @@ final class Detector
     {
         try {
             $args = [
-                'timeout' => 5,
-                'sslverify' => true,
-                'reject_unsafe_urls' => true,
-                'headers' => [
+                'timeout'             => 5,
+                'sslverify'           => true,
+                'reject_unsafe_urls'  => true,
+                'limit_response_size' => 1048576, // 1 MB safety limit
+                'headers'             => [
                     'User-Agent' => 'Onionify/1.0 (+https://wordpress.org/)',
                 ],
             ];
+			
             $resp = wp_remote_get('https://check.torproject.org/exit-addresses', $args);
             if (is_wp_error($resp)) {
                 return null;

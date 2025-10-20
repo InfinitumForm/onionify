@@ -483,13 +483,16 @@ form-action 'self';"
         }
         check_admin_referer('onionify_network_save', 'onionify_network_nonce');
 
-        $input = isset($_POST['onionify_onion_map']) ? (array) $_POST['onionify_onion_map'] : [];
-        $clean = [];
+        // Sanitize POST payload: wp_unslash before sanitization per WP coding standards.
+        $input_raw = isset($_POST['onionify_onion_map']) ? $_POST['onionify_onion_map'] : [];
+        $input     = is_array($input_raw) ? wp_unslash($input_raw) : [];
+        $clean     = [];
 
         foreach ($input as $blog_id => $host) {
             $blog_id = (int) $blog_id;
-            $host    = $this->sanitizeHost($host);
-            if ($blog_id > 0 && $host) {
+            // Ensure string before sanitize.
+            $host    = $this->sanitizeHost((string) $host);
+            if ($blog_id > 0 && $host !== '') {
                 $clean[$blog_id] = $host;
             }
         }
@@ -592,13 +595,28 @@ form-action 'self';"
         }
         check_admin_referer('onionify_defaults_save', 'onionify_defaults_nonce');
 
-        // Sanitize and save network defaults.
-        update_site_option('onionify_default_onion_domain',         $this->sanitizeHost($_POST['onionify_default_onion_domain'] ?? ''));
-        update_site_option('onionify_default_send_onion_location',  $this->sanitizeBool($_POST['onionify_default_send_onion_location'] ?? '0'));
-        update_site_option('onionify_default_enable_hardening',     $this->sanitizeBool($_POST['onionify_default_enable_hardening'] ?? '0'));
-        update_site_option('onionify_default_disable_oembed',       $this->sanitizeBool($_POST['onionify_default_disable_oembed'] ?? '0'));
-        update_site_option('onionify_default_hardening_csp_mode',   $this->sanitizeCspMode($_POST['onionify_default_hardening_csp_mode'] ?? 'strict'));
-        update_site_option('onionify_default_hardening_csp_custom', $this->sanitizeCspString($_POST['onionify_default_hardening_csp_custom'] ?? ''));
+        // Sanitize POST payloads using wp_unslash() before custom sanitizers.
+        $domain_raw   = $_POST['onionify_default_onion_domain']         ?? '';
+        $send_raw     = $_POST['onionify_default_send_onion_location']  ?? '0';
+        $hard_raw     = $_POST['onionify_default_enable_hardening']     ?? '0';
+        $oembed_raw   = $_POST['onionify_default_disable_oembed']       ?? '0';
+        $csp_mode_raw = $_POST['onionify_default_hardening_csp_mode']   ?? 'strict';
+        $csp_txt_raw  = $_POST['onionify_default_hardening_csp_custom'] ?? '';
+
+        $domain   = $this->sanitizeHost( (string) wp_unslash( $domain_raw ) );
+        $send     = $this->sanitizeBool( wp_unslash( $send_raw ) );
+        $hard     = $this->sanitizeBool( wp_unslash( $hard_raw ) );
+        $oembed   = $this->sanitizeBool( wp_unslash( $oembed_raw ) );
+        $csp_mode = $this->sanitizeCspMode( (string) wp_unslash( $csp_mode_raw ) );
+        $csp_txt  = $this->sanitizeCspString( (string) wp_unslash( $csp_txt_raw ) );
+
+        // Save network defaults.
+        update_site_option('onionify_default_onion_domain',         $domain);
+        update_site_option('onionify_default_send_onion_location',  $send);
+        update_site_option('onionify_default_enable_hardening',     $hard);
+        update_site_option('onionify_default_disable_oembed',       $oembed);
+        update_site_option('onionify_default_hardening_csp_mode',   $csp_mode);
+        update_site_option('onionify_default_hardening_csp_custom', $csp_txt);
 
         wp_safe_redirect(network_admin_url('admin.php?page=onionify_network_defaults&updated=1'));
         exit;
@@ -608,7 +626,10 @@ form-action 'self';"
 
     public function sanitizeHost($host): string
     {
-        $host = strtolower(trim((string) $host));
+        // Defensive: strip tags and normalize.
+        $host = sanitize_text_field( (string) $host );
+        $host = strtolower( trim( $host ) );
+
         if ($host === '') {
             return '';
         }
@@ -632,7 +653,7 @@ form-action 'self';"
 
     public function sanitizeCspMode($val): string
     {
-        $val = (string) $val;
+        $val = sanitize_text_field( (string) $val );
         $allowed = ['strict', 'relaxed', 'off', 'custom'];
         return in_array($val, $allowed, true) ? $val : 'strict';
     }
@@ -640,7 +661,9 @@ form-action 'self';"
     public function sanitizeCspString($val): string
     {
         // Keep as text; trim trailing spaces. Do not try to parse CSP (admin may paste advanced policies).
-        $val = trim((string) $val);
+        $val = (string) $val;
+        $val = wp_kses_no_null( $val );
+        $val = trim( $val );
         // Normalize newlines (CRLF -> LF) to avoid header formatting issues when rendered.
         $val = str_replace(["\r\n", "\r"], "\n", $val);
         return $val;

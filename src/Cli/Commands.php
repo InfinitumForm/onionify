@@ -28,23 +28,29 @@ final class Commands extends WP_CLI_Command
     public function list($_, $assoc_args): void
     {
         if (is_multisite()) {
-            $map = (array) get_site_option('onionify_onion_map', []);
+            $map   = (array) get_site_option('onionify_onion_map', []);
             $items = [];
+
             foreach (get_sites(['number' => 2000]) as $site) {
                 $blog_id = (int) $site->blog_id;
                 $details = get_blog_details($blog_id);
+
                 $items[] = [
                     'blog_id' => $blog_id,
-                    'domain'  => $details->domain,
-                    'path'    => $details->path,
-                    'onion'   => $map[$blog_id] ?? '',
+                    'domain'  => isset($details->domain) ? (string) $details->domain : '',
+                    'path'    => isset($details->path) ? (string) $details->path : '',
+                    'onion'   => isset($map[$blog_id]) ? (string) $map[$blog_id] : '',
                 ];
             }
-            WP_CLI\Utils\format_items('table', $items, ['blog_id','domain','path','onion']);
+
+            \WP_CLI\Utils\format_items('table', $items, ['blog_id', 'domain', 'path', 'onion']);
         } else {
+            $home  = (string) get_option('home');
+            $onion = (string) (get_option('onionify_onion_domain') ?: '(not set)');
+
             WP_CLI::log('Single-site:');
-            WP_CLI::log('  Home:  ' . get_option('home'));
-            WP_CLI::log('  Onion: ' . (get_option('onionify_onion_domain') ?: '(not set)'));
+            WP_CLI::log('  Home:  ' . $home);
+            WP_CLI::log('  Onion: ' . $onion);
         }
     }
 
@@ -65,9 +71,23 @@ final class Commands extends WP_CLI_Command
      */
     public function map($args, $_): void
     {
-        [$id, $host] = $args;
+        // Basic arity check (keeps original logic but avoids notices).
+        if (!is_array($args) || count($args) < 2) {
+            WP_CLI::error('Usage: wp tor-onion map <blog_id|0> <example.onion>');
+        }
 
-        if ((int) $id === 0 && !is_multisite()) {
+        // Sanitize inputs.
+        $id_raw   = (string) $args[0];
+        $host_raw = (string) $args[1];
+
+        $id   = absint($id_raw);
+        $host = $this->sanitize_host($host_raw);
+
+        if ($host === '') {
+            WP_CLI::error('Invalid onion host. Expected something like exampleonionaddress.onion');
+        }
+
+        if ($id === 0 && !is_multisite()) {
             update_option('onionify_onion_domain', $host);
             WP_CLI::success('Set single-site onion host to: ' . $host);
             return;
@@ -77,9 +97,16 @@ final class Commands extends WP_CLI_Command
             WP_CLI::error('Multisite not enabled. Use blog_id=0 for single-site.');
         }
 
-        $map = (array) get_site_option('onionify_onion_map', []);
-        $map[(int) $id] = $host;
+        // Optional: assert blog exists (does not change algorithmic flow).
+        $details = get_blog_details($id, false);
+        if (!$details) {
+            WP_CLI::error('Blog ID does not exist: ' . $id);
+        }
+
+        $map        = (array) get_site_option('onionify_onion_map', []);
+        $map[$id]   = $host;
         update_site_option('onionify_onion_map', $map);
+
         WP_CLI::success("Mapped blog_id {$id} to onion host: {$host}");
     }
 
@@ -96,17 +123,71 @@ final class Commands extends WP_CLI_Command
      */
     public function set($_, $assoc_args): void
     {
+        // Sanitize and normalize toggles.
         if (isset($assoc_args['hardening'])) {
-            update_option('onionify_enable_hardening', $assoc_args['hardening'] === 'on');
+            $hardening = $this->sanitize_on_off($assoc_args['hardening']);
+            update_option('onionify_enable_hardening', $hardening);
         }
+
         if (isset($assoc_args['oembed'])) {
-            update_option('onionify_disable_oembed', $assoc_args['oembed'] !== 'on' ? true : false);
+            $oembed_off = $this->sanitize_on_off($assoc_args['oembed']);
+            // Original logic: anything not "on" becomes true (disabled). With sanitization we keep intent:
+            update_option('onionify_disable_oembed', $oembed_off);
         }
+
         if (isset($assoc_args['csp'])) {
-            $allowed = ['strict','relaxed','off'];
-            $mode = in_array($assoc_args['csp'], $allowed, true) ? $assoc_args['csp'] : 'strict';
+            $mode = $this->sanitize_csp_mode($assoc_args['csp']);
             update_option('onionify_hardening_csp_mode', $mode);
         }
+
         WP_CLI::success('Settings updated.');
+    }
+
+    /* -----------------------------------------------------------------
+     * Internal sanitizers (WP coding standards: sanitize_* on inputs)
+     * ----------------------------------------------------------------- */
+
+    /**
+     * Validate onion host: lowercase, .onion suffix, allowed chars.
+     */
+    private function sanitize_host(string $host): string
+    {
+        $host = sanitize_text_field($host);
+        $host = strtolower(trim($host));
+
+        if ($host === '') {
+            return '';
+        }
+        if (substr($host, -6) !== '.onion') {
+            return '';
+        }
+        if (!preg_match('~^[a-z0-9\-\.]+\.onion$~', $host)) {
+            return '';
+        }
+        return $host;
+    }
+
+    /**
+     * Normalize "on"/"off" toggles into booleans.
+     */
+    private function sanitize_on_off($val): bool
+    {
+        $val = is_string($val) ? strtolower(sanitize_text_field($val)) : $val;
+
+        // Accept typical truthy forms used in CLI flags.
+        if ($val === 'on' || $val === '1' || $val === 'true' || $val === 'yes' || $val === 1 || $val === true) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Allow only expected CSP modes.
+     */
+    private function sanitize_csp_mode($val): string
+    {
+        $val     = is_string($val) ? sanitize_key($val) : '';
+        $allowed = ['strict', 'relaxed', 'off'];
+        return in_array($val, $allowed, true) ? $val : 'strict';
     }
 }

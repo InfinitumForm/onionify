@@ -28,14 +28,19 @@ final class Mapping
     public function onionHostForCurrentSite(): ?string
     {
         if (is_multisite()) {
-            $map = get_site_option('onionify_onion_map', []);
-            $blog_id = get_current_blog_id();
-            $host = $map[$blog_id] ?? '';
-            return $host ? strtolower($host) : null;
+            $map     = (array) get_site_option('onionify_onion_map', []);
+            $blog_id = (int) get_current_blog_id();
+
+            $raw  = isset($map[$blog_id]) ? (string) $map[$blog_id] : '';
+            $host = $this->sanitizeHost($raw);
+
+            return ($host !== '') ? $host : null;
         }
 
         $single = (string) get_option('onionify_onion_domain', '');
-        return $single ? strtolower($single) : null;
+        $host   = $this->sanitizeHost($single);
+
+        return ($host !== '') ? $host : null;
     }
 
     /**
@@ -45,9 +50,39 @@ final class Mapping
     {
         $home = (string) get_option('home');
         $host = wp_parse_url($home, PHP_URL_HOST);
-        if (!$host) {
+        if (!is_string($host) || $host === '') {
             return null;
         }
-        return strtolower($host);
+        // Normalize to lowercase ASCII host.
+        $host = strtolower($host);
+
+        // Basic allowlist for host characters.
+        if (preg_match('~[^a-z0-9\.\-]~', $host)) {
+            return null;
+        }
+        return $host;
+    }
+
+    /**
+     * Basic .onion host validator.
+     */
+    private function sanitizeHost(string $host): string
+    {
+        $host = strtolower(trim($host));
+        if ($host === '') {
+            return '';
+        }
+
+        // Must end with .onion
+        if (substr($host, -6) !== '.onion') {
+            return '';
+        }
+
+        // Allow letters, digits, dots and hyphens only.
+        if (!preg_match('~^[a-z0-9\.\-]+\.onion$~', $host)) {
+            return '';
+        }
+
+        return $host;
     }
 }

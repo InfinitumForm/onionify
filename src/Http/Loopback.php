@@ -53,10 +53,15 @@ final class Loopback
      */
     public function maybeProxyInternalHttp($pre, array $args, string $url)
     {
+        // Avoid recursion if our own reroute already fired.
+        if (!empty($args['headers']['X-TOS-Loopback'])) {
+            return $pre;
+        }
+
         if (!$this->detector->isOnionRequest()) {
             return $pre;
         }
-        if (!get_option('onionify_loopback_reroute', true)) {
+        if (!(bool) get_option('onionify_loopback_reroute', true)) {
             return $pre;
         }
 
@@ -67,26 +72,41 @@ final class Loopback
         }
 
         $parts = wp_parse_url($url);
-        if (!$parts || empty($parts['host'])) {
+        if (!is_array($parts) || empty($parts['host'])) {
             return $pre;
         }
 
         // Only proxy if the target is our own onion host and path is internal (cron/ajax/rest/xmlrpc)
-        $path = $parts['path'] ?? '/';
+        $hostLower  = strtolower((string) $parts['host']);
+        $path       = isset($parts['path']) && is_string($parts['path']) ? $parts['path'] : '/';
         $isInternal = $this->isInternalPath($path) || $this->isRestPath($path);
 
-        if (strtolower($parts['host']) === $onion && $isInternal) {
+        if ($hostLower === $onion && $isInternal) {
             // Build clearnet URL
             $parts['host']   = $clear;
-            // Prefer scheme from DB home (likely http/https)
-            $homeScheme = wp_parse_url(get_option('home'), PHP_URL_SCHEME) ?: 'https';
-            $parts['scheme'] = $homeScheme;
+            $home            = (string) get_option('home');
+            $homeScheme      = wp_parse_url($home, PHP_URL_SCHEME);
+            $scheme          = in_array($homeScheme, ['http', 'https'], true) ? $homeScheme : 'https';
+            $parts['scheme'] = $scheme;
+
+            // Drop auth components to avoid leaking credentials.
+            unset($parts['user'], $parts['pass']);
+
             $newUrl = $this->buildUrl($parts);
+            $newUrl = esc_url_raw($newUrl);
+
+            if ($newUrl === '') {
+                return $pre;
+            }
 
             // Perform actual request and short-circuit original call.
             // Ensure we don't recurse (set a custom header flag).
-            $args['headers'] = isset($args['headers']) && is_array($args['headers']) ? $args['headers'] : [];
-            $args['headers']['X-TOS-Loopback'] = '1';
+			$args['headers'] = isset($args['headers']) && is_array($args['headers']) ? $args['headers'] : [];
+			$args['headers']['X-TOS-Loopback'] = '1';
+			$args['reject_unsafe_urls'] = true;
+			if (!isset($args['sslverify'])) {
+				$args['sslverify'] = true;
+			}
 
             return wp_remote_request($newUrl, $args);
         }
@@ -105,7 +125,7 @@ final class Loopback
         if (!$this->detector->isOnionRequest()) {
             return $cron;
         }
-        if (!get_option('onionify_loopback_reroute', true)) {
+        if (!(bool) get_option('onionify_loopback_reroute', true)) {
             return $cron;
         }
 
@@ -120,15 +140,26 @@ final class Loopback
         }
 
         $parts = wp_parse_url($cron['url']);
-        if (!$parts || empty($parts['host'])) {
+        if (!is_array($parts) || empty($parts['host'])) {
             return $cron;
         }
 
-        if (strtolower($parts['host']) === $onion) {
+        $hostLower = strtolower((string) $parts['host']);
+        if ($hostLower === $onion) {
+            $home       = (string) get_option('home');
+            $homeScheme = wp_parse_url($home, PHP_URL_SCHEME);
+            $scheme     = in_array($homeScheme, ['http', 'https'], true) ? $homeScheme : 'https';
+
             $parts['host']   = $clear;
-            $homeScheme = wp_parse_url(get_option('home'), PHP_URL_SCHEME) ?: 'https';
-            $parts['scheme'] = $homeScheme;
-            $cron['url']     = $this->buildUrl($parts);
+            $parts['scheme'] = $scheme;
+
+            // Drop auth to avoid credential propagation.
+            unset($parts['user'], $parts['pass']);
+
+            $new = esc_url_raw($this->buildUrl($parts));
+            if ($new !== '') {
+                $cron['url'] = $new;
+            }
         }
 
         return $cron;
@@ -150,17 +181,72 @@ final class Loopback
         return (stripos($path, '/wp-json/') === 0);
     }
 
+    /**
+     * Assemble a URL from wp_parse_url() parts defensively.
+     * - Validates host (basic chars)
+     * - Ensures scheme is http/https
+     * - Encodes path/query/fragment safely
+     */
     private function buildUrl(array $parts): string
     {
-        $scheme   = isset($parts['scheme']) ? $parts['scheme'] . '://' : '';
-        $host     = $parts['host'] ?? '';
-        $port     = isset($parts['port']) ? ':' . $parts['port'] : '';
-        $user     = $parts['user'] ?? '';
-        $pass     = isset($parts['pass']) ? ':' . $parts['pass']  : '';
-        $auth     = ($user || $pass) ? "$user$pass@" : '';
-        $path     = $parts['path'] ?? '';
-        $query    = isset($parts['query']) && $parts['query'] !== '' ? '?' . $parts['query'] : '';
-        $fragment = isset($parts['fragment']) ? '#' . $parts['fragment'] : '';
-        return $scheme . $auth . $host . $port . $path . $query . $fragment;
+        $scheme = isset($parts['scheme']) ? strtolower((string) $parts['scheme']) : '';
+        $scheme = in_array($scheme, ['http', 'https'], true) ? $scheme . '://' : '';
+
+        $host = isset($parts['host']) ? strtolower(trim(sanitize_text_field((string) $parts['host']))) : '';
+        if ($host === '' || preg_match('~[^a-z0-9\.\-]~', $host)) {
+            return '';
+        }
+
+        $port = '';
+        if (isset($parts['port'])) {
+            $p = (int) $parts['port'];
+            if ($p > 0 && $p < 65536) {
+                $port = ':' . $p;
+            }
+        }
+
+        // User/pass are intentionally ignored (unset in callers).
+
+        $path = isset($parts['path']) && is_string($parts['path']) ? $parts['path'] : '';
+        $path = $this->encodePath($path);
+
+        $query = '';
+        if (isset($parts['query']) && is_string($parts['query']) && $parts['query'] !== '') {
+            // Parse and rebuild to RFC3986 encode.
+            $pairs = [];
+            parse_str($parts['query'], $pairs);
+            $query = $pairs ? '?' . http_build_query($pairs, '', '&', PHP_QUERY_RFC3986) : '';
+        }
+
+        $fragment = '';
+        if (isset($parts['fragment']) && is_string($parts['fragment']) && $parts['fragment'] !== '') {
+            $fragment = '#' . rawurlencode($parts['fragment']);
+        }
+
+        return $scheme . $host . $port . $path . $query . $fragment;
+    }
+
+    /**
+     * Encode a path safely while preserving slashes.
+     */
+    private function encodePath(string $path): string
+    {
+        if ($path === '') {
+            return '';
+        }
+        $segments = explode('/', $path);
+        foreach ($segments as &$seg) {
+            // Leave empty segments as-is.
+            if ($seg === '') {
+                continue;
+            }
+            // Remove control chars; then encode.
+            $seg = rawurlencode(preg_replace('/[\x00-\x1F\x7F]/', '', $seg));
+        }
+        unset($seg);
+
+        // Preserve leading slash if it existed.
+        $leading = ($path[0] === '/') ? '/' : '';
+        return $leading . implode('/', $segments);
     }
 }
