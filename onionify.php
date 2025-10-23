@@ -39,17 +39,6 @@ if (version_compare(PHP_VERSION, '7.4', '<')) {
 }
 
 /* -------------------------------------------------------------------------
- * Text domain
- * ---------------------------------------------------------------------- */
-add_action('init', static function () {
-    load_plugin_textdomain(
-        'onionify',
-        false,
-        dirname(plugin_basename(ONIONIFY_PLUGIN_FILE)) . '/languages'
-    );
-});
-
-/* -------------------------------------------------------------------------
  * Simple PSR-4 autoloader for this plugin
  * ---------------------------------------------------------------------- */
 if (!defined('ONIONIFY_AUTOLOADER_REGISTERED')) {
