@@ -29,6 +29,17 @@ The plugin follows WordPress.org guidelines and is designed for secure public di
 
 ⚠ Warning: This plugin does not provide hosting-level anonymity or concealment of infrastructure. Onionify helps WordPress handle requests that arrive via onion service addresses, but it does not change or hide server configuration, hosting provider information, or other infrastructure-level metadata. If you require infrastructure-level protections or specialized operational procedures, consult authoritative technical documentation and qualified operational security professionals. Do not rely on this plugin for legal compliance or for anonymizing hosting details.
 
+== External services ==
+
+This plugin can optionally fetch the official Tor exit relay list to verify requests against Tor exits.
+
+Service: Tor Project - Exit addresses list
+Endpoint: https://check.torproject.org/exit-addresses
+What it is used for: When exit verification is enabled, the plugin downloads the public list of Tor exit relays to check inbound requests.
+What data is sent and when: The plugin performs a normal HTTP GET request from the server to the Tor Project endpoint. No user PII is sent; the request includes a generic User-Agent header and, as with any HTTP request, the server's IP address is visible to the Tor Project. This request happens at most once per 24 hours due to caching and only if exit verification is enabled by the site owner.
+How to enable/disable: Exit verification is opt-in. It is disabled by default. It can be enabled via the plugin settings or by adding define('TOS_VERIFY_TOR_EXIT', true) in wp-config.php. If your environment blocks external HTTP requests (WP_HTTP_BLOCK_EXTERNAL), the plugin will respect that unless the host is whitelisted in WP_ACCESSIBLE_HOSTS.
+Provider policies: See the [Tor Project privacy policy](https://www.torproject.org/about/privacy_policy/) and terms on their official website.
+
 == Features ==
 
 * Detects .onion requests and safely rewrites generated WordPress URLs to the configured onion host at runtime.

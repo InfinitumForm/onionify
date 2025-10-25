@@ -157,13 +157,22 @@ final class Rewrite
 
         // Extra: never canonical-bounce for sensitive/admin endpoints when on onion.
         $path = wp_parse_url((string) $requested_url, PHP_URL_PATH);
-        $noBounce = [
-            '/wp-login.php',
-            '/wp-cron.php',
-            '/xmlrpc.php',
-            '/wp-admin/',
-            '/wp-admin/admin-ajax.php',
-        ];
+        $noBounce = (function () {
+			$loginPath  = wp_parse_url(wp_login_url(), PHP_URL_PATH);
+			$cronPath   = wp_parse_url(site_url('wp-cron.php'), PHP_URL_PATH);
+			$xmlrpcPath = wp_parse_url(site_url('xmlrpc.php'), PHP_URL_PATH);
+			$adminRoot  = wp_parse_url(admin_url(), PHP_URL_PATH);
+			$ajaxPath   = wp_parse_url(admin_url('admin-ajax.php'), PHP_URL_PATH);
+
+			return array_filter([
+				is_string($loginPath)  && $loginPath  !== '' ? $loginPath  : '/wp-login.php',
+				is_string($cronPath)   && $cronPath   !== '' ? $cronPath   : '/wp-cron.php',
+				is_string($xmlrpcPath) && $xmlrpcPath !== '' ? $xmlrpcPath : '/xmlrpc.php',
+				// Ensure trailing slash for admin root
+				is_string($adminRoot)  && $adminRoot  !== '' ? rtrim($adminRoot, '/') . '/' : '/wp-admin/',
+				is_string($ajaxPath)   && $ajaxPath   !== '' ? $ajaxPath   : '/wp-admin/admin-ajax.php',
+			]);
+		})();
 
         if (is_string($path)) {
             foreach ($noBounce as $p) {

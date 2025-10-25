@@ -12,7 +12,7 @@ use Onionify\Domain\Detector;
  * Settings registers admin UI for single-site and network (multisite),
  * provides Network Defaults via site_options, and per-site overrides.
  *
- * It also installs pre_option_* fallbacks so that when a per-site option
+ * It also installs default_option_* fallbacks so that when a per-site option
  * is not set, code reading get_option() will transparently receive the
  * network default (if present), without core edits.
  */
@@ -69,7 +69,7 @@ final class Settings
     }
 
     /**
-     * Hook admin pages and install pre_option_* fallbacks.
+     * Hook admin pages and install default_option_* fallbacks.
      */
     public function register(): void
     {
@@ -82,19 +82,15 @@ final class Settings
             add_action('network_admin_edit_onionify_save_defaults', [$this, 'saveNetworkDefaults']);
         }
 
-        // Install pre_option_* filters: when a site option is empty/unset,
+        // Install default_option_* filters: when a site option is empty/unset,
         // transparently fall back to the corresponding site_option (network default).
         foreach ($this->defs as $key => $meta) {
-            add_filter("pre_option_{$meta['site']}", function ($pre) use ($meta) {
-                // If a per-site value exists (even "0" for booleans), return as-is.
-                if ($pre !== false && $pre !== null && $pre !== '') {
-                    return $pre;
-                }
-                // Otherwise, return network default (if set), else hard default.
-                $net = get_site_option($meta['network'], $meta['default']);
-                return $net;
-            });
-        }
+			add_filter("default_option_{$meta['site']}", function ($default) use ($meta) {
+				// If network default is set, return it; otherwise return the hard default.
+				$net = get_site_option($meta['network'], $meta['default']);
+				return $net;
+			});
+		}
 
         // Add contextual help (examples for Custom CSP).
         add_action('load-settings_page_onionify_settings', [$this, 'addSettingsHelpTab']);
@@ -192,98 +188,107 @@ final class Settings
         );
 
         // Onion-Location
-        add_settings_field(
-            'onionify_send_onion_location',
-            esc_html__('Send Onion-Location from clearnet', 'onionify'),
-            function () {
-                $site_val = (bool) get_option('onionify_send_onion_location', $this->defs['onionify_send_onion_location']['default']);
-                $net_val  = is_multisite() ? (bool) get_site_option('onionify_default_send_onion_location', $this->defs['onionify_send_onion_location']['default']) : null;
+		add_settings_field(
+			'onionify_send_onion_location',
+			esc_html__('Send Onion-Location from clearnet', 'onionify'),
+			function () {
+				$site_val = (bool) get_option('onionify_send_onion_location', $this->defs['onionify_send_onion_location']['default']);
+				$net_val  = is_multisite() ? (bool) get_site_option('onionify_default_send_onion_location', $this->defs['onionify_send_onion_location']['default']) : null;
 
-                echo '<label><input type="checkbox" name="onionify_send_onion_location" value="1" ' . checked($site_val, true, false) . '>';
-                echo ' ' . esc_html__('Advertise the onion mirror via the Onion-Location header when visitors are on clearnet.', 'onionify') . '</label>';
+				// Hidden input forces "0" when checkbox is unchecked.
+				echo '<input type="hidden" name="onionify_send_onion_location" value="0">';
+				echo '<label><input type="checkbox" name="onionify_send_onion_location" value="1" ' . checked($site_val, true, false) . '>';
+				echo ' ' . esc_html__('Advertise the onion mirror via the Onion-Location header when visitors are on clearnet.', 'onionify') . '</label>';
 
-                if (is_multisite()) {
-                    echo '<p class="description">' . sprintf(
-                        esc_html__('Leave unchecked and empty to inherit Network Default: %s', 'onionify'),
-                        '<code>' . esc_html($net_val ? 'on' : 'off') . '</code>'
-                    ) . '</p>';
-                }
-            },
-            'onionify_settings',
-            'onionify_main'
-        );
+				if (is_multisite()) {
+					echo '<p class="description">' . wp_kses_post( sprintf(
+						__('Leave unchecked and empty to inherit Network Default: %s', 'onionify'),
+						'<code>' . esc_html($net_val ? 'on' : 'off') . '</code>'
+					) ) . '</p>';
+				}
+			},
+			'onionify_settings',
+			'onionify_main'
+		);
+
 
         // Hardening enable
         add_settings_field(
-            'onionify_enable_hardening',
-            esc_html__('Enable onion privacy/security', 'onionify'),
-            function () {
-                $site_val = (bool) get_option('onionify_enable_hardening', $this->defs['onionify_enable_hardening']['default']);
-                $net_val  = is_multisite() ? (bool) get_site_option('onionify_default_enable_hardening', $this->defs['onionify_enable_hardening']['default']) : null;
+			'onionify_enable_hardening',
+			esc_html__('Enable onion privacy/security', 'onionify'),
+			function () {
+				$site_val = (bool) get_option('onionify_enable_hardening', $this->defs['onionify_enable_hardening']['default']);
+				$net_val  = is_multisite() ? (bool) get_site_option('onionify_default_enable_hardening', $this->defs['onionify_enable_hardening']['default']) : null;
 
-                echo '<label><input type="checkbox" name="onionify_enable_hardening" value="1" ' . checked($site_val, true, false) . '>';
-                echo ' ' . esc_html__('Apply stricter privacy/security only for .onion requests.', 'onionify') . '</label>';
+				echo '<input type="hidden" name="onionify_enable_hardening" value="0">';
+				echo '<label><input type="checkbox" name="onionify_enable_hardening" value="1" ' . checked($site_val, true, false) . '>';
+				echo ' ' . esc_html__('Apply stricter privacy/security only for .onion requests.', 'onionify') . '</label>';
 
-                if (is_multisite()) {
-                    echo '<p class="description">' . sprintf(
-                        esc_html__('Leave unchecked and empty to inherit Network Default: %s', 'onionify'),
-                        '<code>' . esc_html($net_val ? 'on' : 'off') . '</code>'
-                    ) . '</p>';
-                }
-            },
-            'onionify_settings',
-            'onionify_main'
-        );
+				if (is_multisite()) {
+					echo '<p class="description">' . wp_kses_post( sprintf(
+						__('Leave unchecked and empty to inherit Network Default: %s', 'onionify'),
+						'<code>' . esc_html($net_val ? 'on' : 'off') . '</code>'
+					) ) . '</p>';
+				}
+			},
+			'onionify_settings',
+			'onionify_main'
+		);
 
         // Loopback/cron reroute
         add_settings_field(
-            'onionify_loopback_reroute',
-            esc_html__('Reroute internal HTTP when on onion', 'onionify'),
-            function () {
-                $checked = (bool) get_option('onionify_loopback_reroute', true);
-                echo '<label><input type="checkbox" name="onionify_loopback_reroute" value="1" ' . checked($checked, true, false) . '> ';
-                echo esc_html__('Prevents loopback/cron/REST failures by calling the clearnet host for internal endpoints (wp-cron, admin-ajax, REST). Visitors remain on .onion; this only affects server-internal calls.', 'onionify');
-                echo '</label>';
-            },
-            'onionify_settings',
-            'onionify_main'
-        );
+			'onionify_loopback_reroute',
+			esc_html__('Reroute internal HTTP when on onion', 'onionify'),
+			function () {
+				$checked = (bool) get_option('onionify_loopback_reroute', true);
+				echo '<input type="hidden" name="onionify_loopback_reroute" value="0">';
+				echo '<label><input type="checkbox" name="onionify_loopback_reroute" value="1" ' . checked($checked, true, false) . '> ';
+				echo esc_html__('Prevents loopback/cron/REST failures by calling the clearnet host for internal endpoints (wp-cron, admin-ajax, REST). Visitors remain on .onion; this only affects server-internal calls.', 'onionify');
+				echo '</label>';
+			},
+			'onionify_settings',
+			'onionify_main'
+		);
 
         // External avatars
-        add_settings_field(
-            'onionify_disable_external_avatars',
-            esc_html__('Disable external avatars on onion', 'onionify'),
-            function () {
-                $checked = (bool) get_option('onionify_disable_external_avatars', false);
-                echo '<label><input type="checkbox" name="onionify_disable_external_avatars" value="1" ' . checked($checked, true, false) . '> ';
-                echo esc_html__('Avoid loading avatars from third-party hosts (e.g., gravatar.com) for onion visitors. Replaces avatar URLs with a local data URI.', 'onionify');
-                echo '</label>';
-            },
-            'onionify_settings',
-            'onionify_main'
-        );
+		add_settings_field(
+			'onionify_disable_external_avatars',
+			esc_html__('Disable external avatars on onion', 'onionify'),
+			function () {
+				$checked = (bool) get_option('onionify_disable_external_avatars', false);
+				echo '<input type="hidden" name="onionify_disable_external_avatars" value="0">';
+				echo '<label><input type="checkbox" name="onionify_disable_external_avatars" value="1" ' . checked($checked, true, false) . '> ';
+				echo esc_html__('Avoid loading avatars from third-party hosts (e.g., gravatar.com) for onion visitors. Replaces avatar URLs with a local data URI.', 'onionify');
+				echo '</label>';
+			},
+			'onionify_settings',
+			'onionify_main'
+		);
+
 
         // Disable oEmbed
-        add_settings_field(
-            'onionify_disable_oembed',
-            esc_html__('Disable oEmbed/embeds on .onion', 'onionify'),
-            function () {
-                $site_val = (bool) get_option('onionify_disable_oembed', $this->defs['onionify_disable_oembed']['default']);
-                $net_val  = is_multisite() ? (bool) get_site_option('onionify_default_disable_oembed', $this->defs['onionify_disable_oembed']['default']) : null;
+		add_settings_field(
+			'onionify_disable_oembed',
+			esc_html__('Disable oEmbed/embeds on .onion', 'onionify'),
+			function () {
+				$site_val = (bool) get_option('onionify_disable_oembed', $this->defs['onionify_disable_oembed']['default']);
+				$net_val  = is_multisite() ? (bool) get_site_option('onionify_default_disable_oembed', $this->defs['onionify_disable_oembed']['default']) : null;
 
-                echo '<label><input type="checkbox" name="onionify_disable_oembed" value="1" ' . checked($site_val, true, false) . '>';
-                echo ' ' . esc_html__('Block external embeds (YouTube/Twitter/etc.) for onion visitors.', 'onionify') . '</label>';
+				echo '<input type="hidden" name="onionify_disable_oembed" value="0">';
+				echo '<label><input type="checkbox" name="onionify_disable_oembed" value="1" ' . checked($site_val, true, false) . '>';
+				echo ' ' . esc_html__('Block external embeds (YouTube/Twitter/etc.) for onion visitors.', 'onionify') . '</label>';
 
-                if (is_multisite()) {
-                    echo '<p class="description">' . sprintf(
-                        esc_html__('Leave unchecked and empty to inherit Network Default: %s', 'onionify'),
-                        '<code>' . esc_html($net_val ? 'on' : 'off') . '</code>'
-                    ) . '</p>';
-                }
-            },
-            'onionify_settings',
-            'onionify_main'
-        );
+				if (is_multisite()) {
+					echo '<p class="description">' . wp_kses_post( sprintf(
+						__('Leave unchecked and empty to inherit Network Default: %s', 'onionify'),
+						'<code>' . esc_html($net_val ? 'on' : 'off') . '</code>'
+					) ) . '</p>';
+				}
+			},
+			'onionify_settings',
+			'onionify_main'
+		);
+
 
         // CSP mode
         add_settings_field(
@@ -301,11 +306,11 @@ final class Settings
                 echo '</select>';
 
                 $inherit_text = is_multisite()
-                    ? sprintf(esc_html__('(Leave unchanged to inherit Network Default: %s)', 'onionify'), $net_val)
+                    ? sprintf(__('(Leave unchanged to inherit Network Default: %s)', 'onionify'), $net_val)
                     : '';
                 echo '<p class="description">' .
                     esc_html__('Strict = safest (no inline scripts). Relaxed = allow inline scripts. Off = do not send CSP. Custom = send exactly what you enter below.', 'onionify')
-                    . ' ' . esc_html($inherit_text) . '</p>';
+                    . ' ' . wp_kses_post($inherit_text) . '</p>';
 
                 // Short, plain-English tip
                 echo '<p class="description"><em>' . esc_html__('Tip: Start with Strict. If your theme/plugins break (e.g., inline JS), try Relaxed. Use Custom only if you know CSP syntax.', 'onionify') . '</em></p>';
@@ -358,10 +363,10 @@ form-action 'self';"
                 );
                 echo '</pre>';
                 if (is_multisite()) {
-                    echo '<p class="description">' . sprintf(
-                        esc_html__('Leave empty to inherit Network Default (if set). Current Network Default: %s', 'onionify'),
+                    echo '<p class="description">' . wp_kses_post( sprintf(
+                        __('Leave empty to inherit Network Default (if set). Current Network Default: %s', 'onionify'),
                         '<code>' . ($net_val !== '' ? esc_html($net_val) : esc_html__('(not set)', 'onionify')) . '</code>'
-                    ) . '</p>';
+                    ) ) . '</p>';
                 }
             },
             'onionify_settings',
@@ -643,13 +648,14 @@ form-action 'self';"
     }
 
     public function sanitizeBool($val): bool
-    {
-        // Accepts '1', 1, true, 'on' as true; everything else false.
-        if ($val === true || $val === 1 || $val === '1' || $val === 'on') {
-            return true;
-        }
-        return false;
-    }
+	{
+		// Accept various truthy values commonly posted by WP checkboxes
+		if ($val === true || $val === 1 || $val === '1' || $val === 'on' || $val === 'yes') {
+			return true;
+		}
+		// Everything else is false (including '0', 0, '', null, 'off', 'no')
+		return false;
+	}
 
     public function sanitizeCspMode($val): string
     {

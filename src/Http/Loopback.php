@@ -18,17 +18,14 @@ final class Loopback
     private Detector $detector;
     private Mapping $mapping;
 
-    /** Internal-only paths we may reroute */
-    private array $internalPaths = [
-        '/wp-cron.php',
-        '/wp-admin/admin-ajax.php',
-        '/xmlrpc.php',
-    ];
+    /** @var string[] Internal-only paths we may reroute (URL paths only, no scheme/host) */
+    private array $internalPaths = [];
 
     public function __construct(Detector $detector, Mapping $mapping)
     {
         $this->detector = $detector;
         $this->mapping  = $mapping;
+        $this->internalPaths = $this->buildInternalPaths();
     }
 
     /**
@@ -101,12 +98,12 @@ final class Loopback
 
             // Perform actual request and short-circuit original call.
             // Ensure we don't recurse (set a custom header flag).
-			$args['headers'] = isset($args['headers']) && is_array($args['headers']) ? $args['headers'] : [];
-			$args['headers']['X-TOS-Loopback'] = '1';
-			$args['reject_unsafe_urls'] = true;
-			if (!isset($args['sslverify'])) {
-				$args['sslverify'] = true;
-			}
+            $args['headers'] = isset($args['headers']) && is_array($args['headers']) ? $args['headers'] : [];
+            $args['headers']['X-TOS-Loopback'] = '1';
+            $args['reject_unsafe_urls'] = true;
+            if (!isset($args['sslverify'])) {
+                $args['sslverify'] = true;
+            }
 
             return wp_remote_request($newUrl, $args);
         }
@@ -165,6 +162,9 @@ final class Loopback
         return $cron;
     }
 
+    /**
+     * Determine if a path points to one of the internal endpoints we should never bounce.
+     */
     private function isInternalPath(string $path): bool
     {
         foreach ($this->internalPaths as $p) {
@@ -175,10 +175,15 @@ final class Loopback
         return false;
     }
 
+    /**
+     * Detect REST API paths using the configured prefix (defaults to wp-json).
+     */
     private function isRestPath(string $path): bool
     {
-        // WordPress REST root defaults to /wp-json/
-        return (stripos($path, '/wp-json/') === 0);
+        $prefix = function_exists('rest_get_url_prefix') ? rest_get_url_prefix() : 'wp-json';
+        $prefix = is_string($prefix) && $prefix !== '' ? $prefix : 'wp-json';
+        $needle = '/' . ltrim($prefix, '/') . '/';
+        return stripos($path, $needle) === 0;
     }
 
     /**
@@ -192,7 +197,11 @@ final class Loopback
         $scheme = isset($parts['scheme']) ? strtolower((string) $parts['scheme']) : '';
         $scheme = in_array($scheme, ['http', 'https'], true) ? $scheme . '://' : '';
 
-        $host = isset($parts['host']) ? strtolower(trim(sanitize_text_field((string) $parts['host']))) : '';
+        $hostRaw = isset($parts['host']) ? (string) $parts['host'] : '';
+        $host = function_exists('sanitize_text_field')
+            ? strtolower(trim(sanitize_text_field($hostRaw)))
+            : strtolower(trim(preg_replace('/[^\pL\pN\.\-]/u', '', $hostRaw)));
+
         if ($host === '' || preg_match('~[^a-z0-9\.\-]~', $host)) {
             return '';
         }
@@ -206,13 +215,11 @@ final class Loopback
         }
 
         // User/pass are intentionally ignored (unset in callers).
-
         $path = isset($parts['path']) && is_string($parts['path']) ? $parts['path'] : '';
         $path = $this->encodePath($path);
 
         $query = '';
         if (isset($parts['query']) && is_string($parts['query']) && $parts['query'] !== '') {
-            // Parse and rebuild to RFC3986 encode.
             $pairs = [];
             parse_str($parts['query'], $pairs);
             $query = $pairs ? '?' . http_build_query($pairs, '', '&', PHP_QUERY_RFC3986) : '';
@@ -236,7 +243,6 @@ final class Loopback
         }
         $segments = explode('/', $path);
         foreach ($segments as &$seg) {
-            // Leave empty segments as-is.
             if ($seg === '') {
                 continue;
             }
@@ -249,4 +255,41 @@ final class Loopback
         $leading = ($path[0] === '/') ? '/' : '';
         return $leading . implode('/', $segments);
     }
+
+    /**
+     * Build internal endpoints dynamically to support custom admin paths,
+     * subdirectory installs, reverse proxies, and non-standard setups.
+     *
+     * @return string[] URL paths (no scheme/host), unique and non-empty.
+     */
+    private function buildInternalPaths(): array
+	{
+		$haveWp = function_exists('admin_url')
+			&& function_exists('site_url')
+			&& function_exists('wp_parse_url')
+			&& function_exists('wp_login_url');
+
+		$loginPath  = $haveWp ? wp_parse_url(wp_login_url(), PHP_URL_PATH)               : '';
+		$cronPath   = $haveWp ? wp_parse_url(site_url('wp-cron.php'), PHP_URL_PATH)     : '';
+		$xmlrpcPath = $haveWp ? wp_parse_url(site_url('xmlrpc.php'), PHP_URL_PATH)      : '';
+		$adminRoot  = $haveWp ? wp_parse_url(admin_url(), PHP_URL_PATH)                 : '';
+		$ajaxPath   = $haveWp ? wp_parse_url(admin_url('admin-ajax.php'), PHP_URL_PATH) : '';
+
+		// Normalize admin root with trailing slash, or fall back to /wp-admin/
+		$adminRootNorm = (is_string($adminRoot) && $adminRoot !== '')
+			? rtrim($adminRoot, '/') . '/'
+			: '/wp-admin/';
+
+		$paths = [
+			(is_string($loginPath)  && $loginPath  !== '') ? $loginPath  : null,
+			(is_string($cronPath)   && $cronPath   !== '') ? $cronPath   : null,
+			(is_string($xmlrpcPath) && $xmlrpcPath !== '') ? $xmlrpcPath : null,
+			$adminRootNorm,
+			(is_string($ajaxPath)   && $ajaxPath   !== '') ? $ajaxPath   : null,
+		];
+
+		return array_values(array_unique(array_filter($paths, static function ($p) {
+			return is_string($p) && $p !== '';
+		})));
+	}
 }
