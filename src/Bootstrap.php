@@ -6,6 +6,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+use Onionify\Admin\AdminWelcome;
 use Onionify\Admin\Settings;
 use Onionify\Domain\Detector;
 use Onionify\Domain\Mapping;
@@ -19,6 +20,7 @@ use Onionify\Security\Hardening;
  */
 final class Bootstrap
 {
+	private AdminWelcome $welcome;
     private Settings $settings;
     private Detector $detector;
     private Mapping $mapping;
@@ -30,6 +32,7 @@ final class Bootstrap
     public function __construct()
     {
         // Construction only; no side effects.
+		$this->welcome   = new AdminWelcome();
         $this->settings  = new Settings();
         $this->detector  = new Detector();
         $this->mapping   = new Mapping($this->detector);
@@ -46,6 +49,9 @@ final class Bootstrap
     {
         // Settings pages, options, and help tabs.
         $this->settings->register();
+		
+		// Register one-time welcome flow (MUST be here so hooks exist).
+        $this->welcome->register();
 
         // URL and option rewrites on onion requests.
         add_filter('pre_option_home', [$this, 'filterHomeOptionSafe'], 10, 1);

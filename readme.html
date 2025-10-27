@@ -1,144 +1,374 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tor Onion Support – README</title>
-<style>
-  :root {
-    --bg: #0f1120;
-    --card: #16182b;
-    --muted: #9aa4b2;
-    --text: #e5e9f0;
-    --accent: #7dd3fc;
-    --warning: #fbbf24;
-    --code: #0b0e1a;
-    --border: #232646;
+  <!-- Onionify - Standalone Documentation Page -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Onionify - WordPress .onion Integration Plugin Documentation</title>
+  <meta name="description" content="Onionify enables secure, private, and WordPress-compliant hosting of WordPress sites via .onion services.">
+  <style>
+  /* WordPress Admin-like light theme */
+  :root{
+    --bg: #f0f0f1;        /* page background */
+    --panel: #ffffff;     /* card/panel background */
+    --panel-2: #f6f7f7;   /* subtle chips/bg */
+    --text: #2c3338;      /* base text */
+    --muted: #646970;     /* muted text */
+    --accent: #2271b1;    /* WP link blue */
+    --ok: #00a32a;        /* WP green */
+    --warn: #dba617;      /* WP yellow */
+    --bad: #d63638;       /* WP red */
+    --code: #f6f7f7;      /* code background */
+    --border: #c3c4c7;    /* WP border gray */
   }
-  * { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji", "Segoe UI Emoji"; background: linear-gradient(180deg, #0e101d 0%, #0b0d18 100%); color: var(--text); }
-  a { color: var(--accent); text-decoration: none; }
-  a:hover { text-decoration: underline; }
-  .container { max-width: 920px; margin: 40px auto; padding: 0 20px; }
-  .hero {
-    background: radial-gradient(1200px 600px at 100% -10%, rgba(125,211,252,0.08), transparent 60%),
-                radial-gradient(1000px 500px at -10% 0%, rgba(139,92,246,0.08), transparent 60%),
-                var(--card);
+
+  html,body{
+    background: var(--bg);
+    color: var(--text);
+    font: 14px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol", sans-serif;
+    margin: 0; padding: 0;
+  }
+
+  a{ color: var(--accent); text-decoration: none }
+  a:hover{ text-decoration: underline }
+
+  .wrap{ max-width: 1080px; margin: 0 auto; padding: 24px 20px }
+
+  header{
+    background: var(--panel);
     border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 28px 28px 22px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+    padding: 16px 20px;
+    border-radius: 4px;
+    margin-bottom: 16px;
   }
-  .hero h1 { margin: 0 0 6px; font-size: 28px; letter-spacing: 0.3px; }
-  .hero p { margin: 0; color: var(--muted); }
-  .badge { display: inline-block; padding: 6px 10px; font-size: 12px; border: 1px solid var(--border); border-radius: 999px; color: var(--muted); margin-right: 8px; background: rgba(255,255,255,0.03) }
-  .grid { display: grid; grid-template-columns: 1fr; gap: 18px; margin-top: 26px; }
-  @media (min-width: 880px){ .grid { grid-template-columns: 1fr 1fr; } }
-  .card {
-    background: var(--card);
+  header h1{ margin: 0 0 6px 0; font-size: 24px; line-height: 1.25 }
+  header p{ margin: 4px 0; color: var(--muted) }
+  .meta{
+    display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;
+  }
+  .meta span{
+    background: var(--panel-2);
     border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 18px 18px 16px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    padding: 4px 8px;
+    border-radius: 999px;
+    color: var(--muted);
+    font-size: 12px;
   }
-  .card h2 { margin: 0 0 10px; font-size: 18px; }
-  .card h3 { margin: 16px 0 8px; font-size: 15px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
-  .list { margin: 0; padding-left: 18px; }
-  .small { color: var(--muted); font-size: 14px; }
-  .code, pre, code {
+
+  /* CTA button */
+  .btn{
+    display:inline-block;
+    background: var(--accent);
+    color:#fff;
+    padding:8px 12px;
+    border-radius:3px;
+    border:1px solid #1b5a8d;
+    text-decoration:none;
+    font-weight:600;
+  }
+  .btn:hover{ text-decoration:none; filter:brightness(1.05) }
+
+  nav.toc{
+    border: 1px solid var(--border);
+    background: var(--panel);
+    border-radius: 4px;
+    padding: 12px 14px;
+    margin: 16px 0;
+  }
+  nav.toc h2{ margin:0 0 8px 0; font-size: 16px }
+  nav.toc ul{ list-style: none; padding: 0; margin: 0; columns: 2 }
+  nav.toc li{ margin: 4px 0 }
+
+  section{
+    border: 1px solid var(--border);
+    background: var(--panel);
+    border-radius: 4px;
+    padding: 16px;
+    margin: 12px 0;
+  }
+  section h2{ margin: 0 0 10px 0; font-size: 18px }
+  section h3{ margin: 16px 0 8px 0; font-size: 16px }
+
+  .callout{
+    border-left: 4px solid var(--accent);
+    background: rgba(34,113,177,0.08); /* accent tint */
+    padding: 10px 12px;
+    border-radius: 4px;
+  }
+  .warning{ border-left-color: var(--warn); background: rgba(219,166,23,0.12) }
+  .danger{ border-left-color: var(--bad);  background: rgba(214,54,56,0.10) }
+  .ok{      border-left-color: var(--ok);   background: rgba(0,163,42,0.10) }
+
+  code,pre{
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  }
+  pre{
     background: var(--code);
-    color: #e6f3ff;
-    border: 1px solid #1c2038;
-    border-radius: 10px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
     padding: 12px;
     overflow: auto;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+  code.inline{
+    background: var(--code);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1px 6px;
     font-size: 13px;
   }
-  .callout {
-    border-left: 4px solid var(--warning);
-    background: rgba(251,191,36,0.07);
-    padding: 12px 14px;
-    border-radius: 10px;
+
+  ul,ol{ padding-left: 18px }
+
+  .grid{ display: grid; gap: 12px }
+  @media(min-width: 900px){ .grid.cols-2{ grid-template-columns: 1fr 1fr } }
+
+  footer{ color: var(--muted); text-align: center; margin: 16px 0; font-size: 13px }
+  .kbd{
+    display: inline-block;
+    border: 1px solid var(--border);
+    border-bottom-width: 2px;
+    border-radius: 3px;
+    background: var(--panel-2);
+    padding: 0 6px;
+    font-size: 12px;
   }
-  .footer { text-align: center; color: var(--muted); font-size: 13px; margin: 26px 0 10px; }
-  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-  .chip { background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: var(--muted); padding: 6px 10px; border-radius: 999px; font-size: 12px; }
-  .kbd { background:#11142a;border:1px solid #262a52;border-bottom-width:2px;padding:2px 6px;border-radius:6px;font-family:ui-monospace,monospace;font-size:12px }
+
+  /* Author card */
+  .author-card{
+    display: flex; gap: 12px; align-items: flex-start;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    padding: 12px;
+    border-radius: 4px;
+  }
+  .author-avatar{
+    width: 72px; height: 72px; flex: 0 0 72px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    background: var(--panel-2);
+  }
+  .author-avatar img{ display: block; width: 100%; height: 100%; object-fit: cover }
+  @media (min-width:900px){ .author-avatar{ width: 80px; height: 80px; flex-basis: 80px } }
+  .author-meta{ color: var(--muted); font-size: 13px; margin-top: 6px }
+  .badge{
+    display: inline-block;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 4px 8px;
+    margin-right: 6px;
+    margin-bottom: 6px;
+    font-size: 12px;
+    color: var(--muted);
+    background: var(--panel-2);
+  }
 </style>
+
+
+
+  <!-- Optional JSON-LD Person schema for the author. Uncomment if you want SEO markup in docs.
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"SoftwareSourceCode",
+    "name":"Onionify",
+    "programmingLanguage":"PHP",
+    "applicationCategory":"WordPress Plugin",
+    "author":{
+      "@type":"Person",
+      "name":"Ivijan-Stefan Stipic",
+      "alternateName":"ivijan-stefanstipic"
+    }
+  }
+  </script>
+  -->
 </head>
 <body>
-  <div class="container">
-    <section class="hero">
-      <div class="chips">
-        <span class="badge">Version 1.0.0</span>
-        <span class="badge">Requires WP 6.0+</span>
-        <span class="badge">PHP 7.4+</span>
-        <span class="badge">Multisite-ready</span>
+  <div class="wrap">
+
+    <header>
+      <h1>Onionify</h1>
+      <p>Secure, private, and WordPress-compliant integration for .onion access.</p>
+      <div class="meta">
+        <span>Requires WP: 6.0+</span>
+        <span>Tested up to: 6.8</span>
+        <span>Requires PHP: 7.4+</span>
+        <span>License: GPLv2 or later</span>
       </div>
-      <h1>Tor Onion Support</h1>
-      <p>Clean, conservative, and WordPress.org‑compliant support for serving WordPress sites via Tor hidden services (.onion).</p>
+    </header>
+	
+	<nav class="toc">
+      <h2>Table of contents</h2>
+      <ul>
+        <li><a href="#about">About Onionify</a></li>
+        <li><a href="#author">About the author</a></li>
+        <li><a href="#important-warning">Important warning</a></li>
+        <li><a href="#features">Key features</a></li>
+        <li><a href="#installation">Installation</a></li>
+        <li><a href="#configuration">Configuration</a></li>
+        <li><a href="#csp">CSP modes and examples</a></li>
+        <li><a href="#multisite">Multisite behavior</a></li>
+        <li><a href="#wp-cli">WP-CLI quick usage</a></li>
+        <li><a href="#external-services">External services</a></li>
+        <li><a href="#faq">Frequently asked questions</a></li>
+        <li><a href="#privacy-security-limitations">Privacy, security, limitations</a></li>
+        <li><a href="#support">Support</a></li>
+		<li><a href="#dev">Development and contributions</a></li>
+        <li><a href="#license">License</a></li>
+      </ul>
+    </nav>
+
+    <section id="about">
+      <h2>About Onionify</h2>
+      <p>Onionify is an independent WordPress plugin that enables websites to operate seamlessly through onion services (.onion). It adds safe, standards-compliant integration for onion access by:</p>
+      <ul>
+        <li>Rewriting runtime URLs when requests arrive via .onion.</li>
+        <li>Preventing canonical redirects that could push onion visitors to the clearnet.</li>
+        <li>Optionally sending the official Onion-Location HTTP header.</li>
+        <li>Applying optional privacy-hardening measures for onion traffic only: CSP, COEP, X-Frame-Options, oEmbed and resource hints control.</li>
+      </ul>
+      <p class="callout ok"><strong>Conforms to WordPress.org rules:</strong> no core modifications, uses filters and actions only, supports multisite with per-site mappings and network defaults, and includes optional WP-CLI integration.</p>
+      <p><em>Onionify is not affiliated with or endorsed by the Tor Project.</em></p>
     </section>
 
-    <div class="grid">
-      <article class="card">
-        <h2>Description</h2>
-        <p>Rewrites runtime URLs for .onion requests, avoids onion→clearnet canonical leaks, optionally sends <code>Onion-Location</code>, and adds privacy‑focused hardening (CSP, COEP, oEmbed disable) for onion visitors.</p>
-        <ul class="list">
-          <li>No core hacks, filters/actions only</li>
-          <li>Per‑site mapping + Network Defaults (Multisite)</li>
-          <li>Optional WP‑CLI tools &amp; localization‑ready</li>
-        </ul>
-
-        <h3>⚠ Important Warning</h3>
-        <div class="callout">
-          <strong>BEWARE:</strong> If you aim to make your site available <em>only</em> on the darknet to preserve server/host anonymity, this plugin is <strong>NOT</strong> for you. It does not anonymize infrastructure; it only adapts WordPress behavior for onion visitors.
+    <!-- Author placed early for trust and branding -->
+    <section id="author">
+      <h2>About the author</h2>
+      <div class="author-card">
+        <div class="author-avatar" aria-hidden="true">
+          <img
+            src="https://media.licdn.com/dms/image/v2/C4E03AQH9DAB3Ws8iHA/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1651006870549?e=1762992000&v=beta&t=r1r5ZiYYQO0IEvJNH4WNYuw_G5t9-SfXrle1GoAzMq0"
+            alt="Ivijan-Stefan Stipic"
+            loading="lazy"
+            referrerpolicy="no-referrer"
+          >
         </div>
-      </article>
-
-      <article class="card">
-        <h2>Features</h2>
-        <ul class="list">
-          <li>Detects .onion and rewrites URLs at runtime (DB options untouched)</li>
-          <li>Onion‑Location header from clearnet (optional)</li>
-          <li>Hardening for onion visitors (CSP, COEP, X‑Frame‑Options, no oEmbed)</li>
-          <li>Opt‑in Tor exit‑list verification (cached)</li>
-          <li>WP‑CLI commands + developer filters</li>
-        </ul>
-        <div class="chips">
-          <span class="chip">CSP</span>
-          <span class="chip">Onion‑Location</span>
-          <span class="chip">WP‑CLI</span>
-          <span class="chip">Multisite</span>
+        <div>
+          <h3 style="margin:0">Ivijan-Stefan Stipic</h3>
+          <p style="margin-top:10px">Senior web developer and WordPress plugin author with 20+ years of experience across PHP, MySQL, JavaScript, and WooCommerce integrations. Focused on secure, standards-based engineering and practical tooling for real-world production needs. Creator and maintainer of multiple WordPress plugins and custom enterprise solutions.</p>
+          <p>
+            <span class="badge">Full-Stack</span>
+            <span class="badge">Backend</span>
+            <span class="badge">Frontend</span>
+            <span class="badge">REST API</span>
+            <span class="badge">OAuth</span>
+            <span class="badge">MySQL</span>
+            <span class="badge">MariaDB</span>
+            <span class="badge">Nginx</span>
+            <span class="badge">Apache</span>
+            <span class="badge">PSR-4</span>
+            <span class="badge">Composer</span>
+            <span class="badge">MVC</span>
+            <span class="badge">OOP</span>
+            <span class="badge">PHP 8</span>
+            <span class="badge">cURL</span>
+            <span class="badge">JSON</span>
+            <span class="badge">XML</span>
+            <span class="badge">AJAX</span>
+            <span class="badge">jQuery</span>
+            <span class="badge">Vue.js</span>
+            <span class="badge">Node.js</span>
+            <span class="badge">CLI</span>
+            <span class="badge">WordPress Core</span>
+            <span class="badge">Plugin Development</span>
+            <span class="badge">Theme Development</span>
+            <span class="badge">WooCommerce Gateway</span>
+            <span class="badge">Custom Integrations</span>
+            <span class="badge">Security Auditing</span>
+            <span class="badge">Optimization</span>
+            <span class="badge">Caching</span>
+            <span class="badge">Redis</span>
+            <span class="badge">Performance Tuning</span>
+            <span class="badge">DevOps</span>
+            <span class="badge">Linux Server</span>
+            <span class="badge">Bash</span>
+            <span class="badge">Automation</span>
+            <span class="badge">OpenAI</span>
+            <span class="badge">ESP32</span>
+            <span class="badge">IoT</span>
+            <span class="badge">Microcontroller</span>
+            <span class="badge">SEO</span>
+            <span class="badge">Web Marketing</span>
+            <span class="badge">Branding</span>
+            <span class="badge">Leadership</span>
+            <span class="badge">Team Management</span>
+            <span class="badge">Project Architecture</span>
+            <span class="badge">Scalability</span>
+            <span class="badge">Security Engineering</span>
+            <span class="badge">Clean Code</span>
+            <span class="badge">Code Review</span>
+            <span class="badge">Documentation</span>
+          </p>
+          <p class="author-meta">For custom work and consulting please use the contact channel in the Support section below.</p>
         </div>
-      </article>
+      </div>
+      <p style="margin-top:16px;color:var(--muted);font-size:15px;">This documentation provides all technical and operational details for Onionify, including setup, configuration, and integration guidance for WordPress sites served via .onion.</p>
+    </section>
 
-      <article class="card">
-        <h2>Installation</h2>
-        <ol class="list">
-          <li>Upload <code>tor-onion-support</code> to <code>/wp-content/plugins/</code>.</li>
-          <li>Activate via <em>Plugins</em>.</li>
-          <li>Settings → <strong>Tor / .onion</strong>: set your <code>example.onion</code> host and hardening options.</li>
-          <li>Multisite: Network Admin → Tor / .onion → Mapping &amp; Network Defaults.</li>
-        </ol>
-        <p class="small"><strong>Optional exit‑list check:</strong> <span class="kbd">define('TOS_VERIFY_TOR_EXIT', true);</span> or add filter <span class="kbd">tor_onion_verify_exit_list</span>. Cached for 24h.</p>
-      </article>
+    <section id="important-warning" class="danger callout">
+      <h2>Important warning</h2>
+      <p>This plugin does not provide hosting-level anonymity or concealment of infrastructure. Onionify helps WordPress handle requests that arrive via onion service addresses, but it does not change or hide server configuration, hosting provider information, or other infrastructure-level metadata.</p>
+      <p>If you require infrastructure-level protections or specialized operational security, consult authoritative documentation and qualified professionals. Do not rely on this plugin for legal compliance or for anonymizing hosting details.</p>
+    </section>
 
-      <article class="card">
-        <h2>Settings (Quick Guide)</h2>
-        <ul class="list">
-          <li><strong>.onion domain</strong> — host only (e.g., <code>abcd1234xyz.onion</code>).</li>
-          <li><strong>Onion‑Location</strong> — advertise onion mirror from clearnet.</li>
-          <li><strong>Onion hardening</strong> — stricter headers for onion visitors.</li>
-          <li><strong>Disable oEmbed</strong> — avoid 3rd‑party embeds on onion.</li>
-          <li><strong>CSP mode</strong> — <em>Strict</em>, <em>Relaxed</em>, <em>Off</em>, <em>Custom</em>.</li>
-        </ul>
-        <p class="small"><em>Tip:</em> Start with <strong>Strict</strong>. If a theme/plugin breaks, try <strong>Relaxed</strong>. Use <strong>Custom</strong> only if you know CSP.</p>
-      </article>
+    <section id="features">
+      <h2>Key features</h2>
+      <ul>
+        <li>Detects .onion requests and safely rewrites generated WordPress URLs to the configured onion host at runtime.</li>
+        <li>Does not modify database <code class="inline">home</code> or <code class="inline">siteurl</code> values. Rewrites occur at runtime only.</li>
+        <li>Multisite support: per-site onion mapping and configurable network defaults.</li>
+        <li>Optional Onion-Location header from clearnet to advertise the onion mirror.</li>
+        <li>Optional privacy hardening for onion visitors: CSP, COEP, X-Frame-Options, disable oEmbed, tighten resource hints.</li>
+        <li>Optional Tor exit verification using the public exit list (opt-in only).</li>
+        <li>WP-CLI commands to list, map, and manage onion host configurations.</li>
+        <li>Developer filters: <code class="inline">onion_is_onion_request</code>, <code class="inline">onion_verify_exit_list</code>.</li>
+        <li>Defensive code, compatible with PHP 7.4-8.x.</li>
+      </ul>
+    </section>
 
-      <article class="card">
-        <h2>Custom CSP – Examples</h2>
-<pre class="code">default-src 'self';
+    <section id="installation">
+      <h2>Installation</h2>
+      <ol>
+        <li>Upload the <span class="kbd">onionify</span> folder to <span class="kbd">/wp-content/plugins/</span>.</li>
+        <li>Activate the plugin in WordPress Admin under Plugins.</li>
+        <li>Single-site: Settings -> Onionify. Enter your <code class="inline">.onion</code> host (host only, e.g. <code class="inline">abcd1234xyz.onion</code>) and adjust optional hardening.</li>
+        <li>Multisite: Network Admin -> Onionify. Use Mapping to map each site to its onion host, and configure Network Defaults if desired.</li>
+        <li class="callout">Optional: enable Tor exit verification via wp-config or a filter. See External services below.</li>
+      </ol>
+    </section>
+
+    <section id="configuration">
+      <h2>Configuration</h2>
+      <div class="grid cols-2">
+        <div>
+          <h3>.onion domain</h3>
+          <p>Host only, no protocol. Example: <code class="inline">abcd1234xyz.onion</code>. In multisite, leave empty to inherit the Network Default.</p>
+          <h3>Send Onion-Location from clearnet</h3>
+          <p>Adds <code class="inline">Onion-Location: http://&lt;your-onion&gt;&lt;path&gt;</code> on clearnet requests so browsers can discover your onion mirror.</p>
+          <h3>Enable onion hardening</h3>
+          <p>Applies headers and filters to reduce external resource loading and privacy leakage for onion traffic only.</p>
+        </div>
+        <div>
+          <h3>Disable oEmbed/embeds on .onion</h3>
+          <p>Blocks automatic fetching of oEmbed content and discovery links to avoid third-party requests for onion visitors.</p>
+          <h3>CSP mode</h3>
+          <ul>
+            <li><strong>Strict</strong>: safest, no inline JS. Best privacy, may break themes using inline JS.</li>
+            <li><strong>Relaxed</strong>: allows inline scripts/styles for broader compatibility.</li>
+            <li><strong>Off</strong>: no CSP header sent by the plugin.</li>
+            <li><strong>Custom</strong>: send exactly the policy you provide in the Custom CSP field.</li>
+          </ul>
+        </div>
+      </div>
+      <p class="callout warning"><strong>Tip:</strong> Start with Strict. If something breaks, try Relaxed. Use Custom only if you understand CSP syntax.</p>
+    </section>
+
+    <section id="csp">
+      <h2>CSP modes and examples</h2>
+      <h3>Minimal secure WordPress (no external CDN)</h3>
+      <pre><code>default-src 'self';
 script-src 'self';
 style-src 'self' 'unsafe-inline';
 img-src 'self' data:;
@@ -147,36 +377,160 @@ connect-src 'self';
 frame-src 'self';
 frame-ancestors 'self';
 base-uri 'self';
-form-action 'self';</pre>
+form-action 'self';</code></pre>
 
-<pre class="code">default-src 'self';
+      <h3>Relaxed (allows inline JS)</h3>
+      <pre><code>default-src 'self';
 script-src 'self' 'unsafe-inline';
 style-src 'self' 'unsafe-inline';
 img-src 'self' data:;
 font-src 'self' data:;
 connect-src 'self';
-frame-src 'self';</pre>
+frame-src 'self';</code></pre>
 
-<pre class="code">img-src 'self' https://cdn.example.com data:;
-font-src 'self' https://cdn.example.com data:;</pre>
-        <p class="small">The Custom CSP field is used only when mode = <strong>Custom</strong>. The plugin sends exactly what you enter.</p>
-      </article>
+      <h3>Using a specific CDN</h3>
+      <pre><code>img-src 'self' https://cdn.example.com data:;
+font-src 'self' https://cdn.example.com data:;</code></pre>
+    </section>
 
-      <article class="card">
-        <h2>WP‑CLI</h2>
-<pre class="code">wp tor-onion list
-wp tor-onion map &lt;blog_id|0&gt; example.onion
-wp tor-onion set --hardening=on --oembed=off --csp=strict</pre>
-        <h3>Developer Filters</h3>
-<pre class="code">add_filter('tor_onion_is_tor_request', function($is_tor, $server){
-  return $is_tor;
-}, 10, 2);
+    <section id="multisite">
+      <h2>Multisite behavior</h2>
+      <ul>
+        <li><strong>Per-site mapping:</strong> Network Admin -> Onionify allows mapping blog_id to onion host.</li>
+        <li><strong>Network Defaults:</strong> set default onion host, CSP mode, and hardening toggles inherited by sites unless overridden.</li>
+        <li><strong>Precedence:</strong> Per-site explicit setting -> Network Default -> Plugin internal default.</li>
+      </ul>
+    </section>
 
-add_filter('tor_onion_verify_exit_list', '__return_true');</pre>
-      </article>
-    </div>
+    <section id="wp-cli">
+      <h2>WP-CLI quick usage</h2>
+      <pre><code># List configuration (multisite mapping or single-site status)
+wp tor-onion list
 
-    <p class="footer">© Tor Onion Support — GPLv2 or later. Textdomain: <code>tor-onion-support</code>.</p>
+# Map a blog to an onion host (use 0 for single-site)
+wp tor-onion map &lt;blog_id|0&gt; abcd1234xyz.onion
+
+# Toggle hardening, oEmbed, and CSP mode
+wp tor-onion set --hardening=on --oembed=off --csp=strict
+wp tor-onion set --hardening=off --oembed=on --csp=relaxed</code></pre>
+    </section>
+
+    <section id="external-services">
+      <h2>External services</h2>
+      <p>The plugin can optionally fetch the official Tor exit relay list to verify inbound requests.</p>
+      <ul>
+        <li><strong>Service:</strong> Tor Project - Exit addresses list</li>
+        <li><strong>Endpoint:</strong> <code class="inline">https://check.torproject.org/exit-addresses</code></li>
+      </ul>
+
+      <h3>What it is used for</h3>
+      <p>When exit verification is enabled, the plugin downloads the public list of Tor exit relays to check inbound requests.</p>
+
+      <h3>What data is sent and when</h3>
+      <p>A normal HTTP GET from your server to the Tor endpoint. No user PII is sent. The request includes a generic User-Agent and your server IP is visible as with any HTTP request. Cached for up to 24h and only performed if explicitly enabled.</p>
+
+      <h3>How to enable or disable</h3>
+      <pre><code>// Option 1: wp-config.php
+define('TOS_VERIFY_TOR_EXIT', true);
+
+// Option 2: a mu-plugin or theme functions.php
+add_filter('onion_verify_exit_list', '__return_true');</code></pre>
+
+      <p class="callout">If your environment sets <code class="inline">WP_HTTP_BLOCK_EXTERNAL</code>, the plugin respects it unless the host is whitelisted via <code class="inline">WP_ACCESSIBLE_HOSTS</code>.</p>
+    </section>
+
+    <section id="faq">
+      <h2>Frequently asked questions</h2>
+
+      <h3>How to set up a WordPress site with a .onion address?</h3>
+      <p>First, configure a Tor hidden service on your server. This step is outside WordPress. Edit the Tor configuration file (usually <code class="inline">/etc/tor/torrc</code>) and add:</p>
+      <pre><code>HiddenServiceDir /var/lib/tor/hidden_service/
+HiddenServicePort 80 127.0.0.1:80</code></pre>
+      <p>Restart Tor and read the generated hostname in <code class="inline">/var/lib/tor/hidden_service/hostname</code>. That is your new <code class="inline">.onion</code> address.</p>
+      <p>In WordPress Admin open:</p>
+      <ul>
+        <li><strong>Settings -> Onionify</strong> for single-site, or</li>
+        <li><strong>Network Admin -> Onionify</strong> for multisite</li>
+      </ul>
+      <p>Enter your onion host (for example <code class="inline">abcd1234xyz.onion</code>). Onionify will handle URL rewriting and privacy adjustments for onion traffic. To advertise your onion mirror from the clearnet site, enable <strong>Send Onion-Location from clearnet</strong>.</p>
+      <p class="callout warning"><strong>Note:</strong> Onionify does not create or manage the Tor hidden service. It configures WordPress to correctly respond to requests coming from your <code class="inline">.onion</code> address.</p>
+
+      <h3>Will this make my site available only through an onion address?</h3>
+      <p>No. The plugin does not modify hosting, DNS, or routing. It adjusts WordPress behavior only when requests originate from an onion address. Exclusive onion hosting requires additional server and network configuration beyond this plugin.</p>
+
+      <h3>I use a CDN like Cloudflare - will this work?</h3>
+      <p>Yes. The plugin inspects common headers such as <code class="inline">CF-Connecting-IP</code> and <code class="inline">X-Forwarded-For</code> to help detect onion-origin requests behind CDNs. A filter <code class="inline">onion_is_onion_request</code> is provided for custom integrations. Ensure your CDN passes the correct client IP headers.</p>
+
+      <h3>What happens if I enable Custom CSP but make a mistake?</h3>
+      <p>If a Custom CSP is invalid or overly restrictive, parts of your site, including wp-admin, may break. The plugin sends exactly the policy you provide. Test on staging first and fall back to Strict or Relaxed if needed.</p>
+
+      <h3>Does the plugin change database home or siteurl values?</h3>
+      <p>No. Onionify rewrites URLs dynamically at runtime. Database values remain unchanged.</p>
+
+      <h3>How do I enable or disable the exit-address verification check?</h3>
+      <p>It is disabled by default. To enable:</p>
+      <pre><code>// Enable via wp-config.php
+define('TOS_VERIFY_TOR_EXIT', true);
+
+// Or via filter in a mu-plugin or theme
+add_filter('onion_verify_exit_list', '__return_true');</code></pre>
+    </section>
+
+    <section id="privacy-security-limitations">
+      <h2>Privacy, security, and limitations</h2>
+      <ul>
+        <li>Onionify adjusts WordPress behavior based on access method (clearnet vs. onion) by handling URLs, selected headers, CSP, and resource hints.</li>
+        <li>It does not anonymize or conceal server infrastructure details such as hosting IPs or DNS records. It is not designed to provide anonymity or infrastructure concealment.</li>
+        <li>External requests are disabled by default. The optional exit verification is opt-in and cached for 24h when enabled.</li>
+        <li>Best practice for onion privacy is to host assets locally and avoid third-party CDNs where possible.</li>
+      </ul>
+    </section>
+
+    <section id="support">
+      <h2>Support</h2>
+      <p>For any inquiries, plugin support, or custom development requests, please contact the author directly.</p>
+
+      <div class="callout ok" style="margin-top:14px">
+        <p style="margin:0"><strong>Contact:</strong> <a href="mailto:infinitumform+Onionify@gmail.com">infinitumform+Onionify@gmail.com</a></p>
+        <p style="margin:6px 0 0 0"><strong>Website:</strong> <a href="https://infinitumform.com/" target="_blank" rel="noopener">https://infinitumform.com/</a></p>
+        <p style="margin:6px 0 0 0"><strong>LinkedIn:</strong> <a href="https://www.linkedin.com/in/ivijanstefanstipic/" target="_blank" rel="noopener">Ivijan-Stefan Stipic</a></p>
+      </div>
+
+      <p style="margin-top:16px">Commercial partnerships, plugin integrations, or enterprise consulting are handled personally by the author. Please provide detailed context when reaching out so your inquiry can be addressed efficiently.</p>
+    </section>
+	
+	<section id="dev">
+      <h2>Development and contributions</h2>
+      <p>Contributions, issues, and feature requests are welcome. The development repository is hosted on GitHub:</p>
+      <p><a class="btn" href="https://github.com/InfinitumForm/onionify" target="_blank" rel="noopener">Open GitHub repository</a></p>
+      <h3 style="margin-top:12px">Quick start</h3>
+      <pre><code># Clone
+git clone https://github.com/InfinitumForm/onionify.git
+cd onionify
+
+# Install dev tools (optional)
+# phpcs --standard=WordPress --extensions=php ./src
+
+# Build zip (example)
+# zip -r onionify.zip . -x ".git/*" ".github/*" ".DS_Store"</code></pre>
+      <h3>Guidelines</h3>
+      <ul>
+        <li>Follow WordPress Coding Standards and PSR-4 autoloading used in the plugin.</li>
+        <li>Keep changes backward-compatible for WP 6.0+ and PHP 7.4+.</li>
+        <li>Open an issue before large changes; small PRs are preferred and easier to review.</li>
+        <li>Security reports: please contact the author directly via the email in the Support section.</li>
+      </ul>
+    </section>
+
+    <section id="license">
+      <h2>License</h2>
+      <p>GPLv2 or later. See <a href="https://www.gnu.org/licenses/gpl-2.0.html" target="_blank" rel="noopener">https://www.gnu.org/licenses/gpl-2.0.html</a>.</p>
+    </section>
+
+    <footer>
+      <p>Onionify - WordPress .onion integration plugin. Copyright &copy; 2025.</p>
+    </footer>
+
   </div>
 </body>
 </html>

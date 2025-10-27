@@ -1,0 +1,322 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Onionify\n"
+"POT-Creation-Date: 2025-10-27 08:06+0100\n"
+"PO-Revision-Date: 2025-10-27 08:06+0100\n"
+"Last-Translator: Ivijan-Stefan Stipić <infinitumform@gmail.com>\n"
+"Language-Team: Ivijan-Stefan Stipić <infinitumform@gmail.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"X-Generator: Poedit 3.8\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-Flags-xgettext: --add-comments=translators:\n"
+"X-Poedit-WPHeader: onionify.php\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-KeywordsList: "
+"__;_e;_n:1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c;_n_noop:1,2;_nx_noop:3c,1,2;__ngettext_noop:1,2\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPathExcluded-0: *.min.js\n"
+
+#: onionify.php:35
+msgid ""
+"Onionify requires PHP 7.4 or newer. Please upgrade PHP to use this plugin."
+msgstr ""
+
+#: onionify.php:99
+msgid ""
+"Onionify could not initialize: Bootstrap class not found. Please verify "
+"plugin files are complete."
+msgstr ""
+
+#: src/Admin/Settings.php:158 src/Admin/Settings.php:383
+#: src/Admin/Settings.php:395
+msgid "Onionify Settings"
+msgstr ""
+
+#: src/Admin/Settings.php:160
+msgid ""
+"Configure onion address and privacy options for this site. If a value is not "
+"set here, the Network Default applies (Multisite)."
+msgstr ""
+
+#: src/Admin/Settings.php:168
+msgid ".onion domain"
+msgstr ""
+
+#. translators: 1: network default value
+#: src/Admin/Settings.php:179
+#, php-format
+msgid "Leave empty to inherit Network Default: %s"
+msgstr ""
+
+#: src/Admin/Settings.php:180 src/Admin/Settings.php:368
+msgid "(not set)"
+msgstr ""
+
+#: src/Admin/Settings.php:183
+msgid "Enter onion host only, without protocol (e.g., mysiteexample.onion)."
+msgstr ""
+
+#: src/Admin/Settings.php:193
+msgid "Send Onion-Location from clearnet"
+msgstr ""
+
+#: src/Admin/Settings.php:201
+msgid ""
+"Advertise the onion mirror via the Onion-Location header when visitors are "
+"on clearnet."
+msgstr ""
+
+#: src/Admin/Settings.php:205 src/Admin/Settings.php:229
+#: src/Admin/Settings.php:283
+#, php-format
+msgid "Leave unchecked and empty to inherit Network Default: %s"
+msgstr ""
+
+#: src/Admin/Settings.php:218
+msgid "Enable onion privacy/security"
+msgstr ""
+
+#: src/Admin/Settings.php:225
+msgid "Apply stricter privacy/security only for .onion requests."
+msgstr ""
+
+#: src/Admin/Settings.php:241
+msgid "Reroute internal HTTP when on onion"
+msgstr ""
+
+#: src/Admin/Settings.php:246
+msgid ""
+"Prevents loopback/cron/REST failures by calling the clearnet host for "
+"internal endpoints (wp-cron, admin-ajax, REST). Visitors remain on .onion; "
+"this only affects server-internal calls."
+msgstr ""
+
+#: src/Admin/Settings.php:256
+msgid "Disable external avatars on onion"
+msgstr ""
+
+#: src/Admin/Settings.php:261
+msgid ""
+"Avoid loading avatars from third-party hosts (e.g., gravatar.com) for onion "
+"visitors. Replaces avatar URLs with a local data URI."
+msgstr ""
+
+#: src/Admin/Settings.php:272
+msgid "Disable oEmbed/embeds on .onion"
+msgstr ""
+
+#: src/Admin/Settings.php:279
+msgid "Block external embeds (YouTube/Twitter/etc.) for onion visitors."
+msgstr ""
+
+#: src/Admin/Settings.php:296
+msgid "CSP mode (onion only)"
+msgstr ""
+
+#: src/Admin/Settings.php:309
+#, php-format
+msgid "(Leave unchanged to inherit Network Default: %s)"
+msgstr ""
+
+#: src/Admin/Settings.php:312
+msgid ""
+"Strict = safest (no inline scripts). Relaxed = allow inline scripts. Off = "
+"do not send CSP. Custom = send exactly what you enter below."
+msgstr ""
+
+#: src/Admin/Settings.php:316
+msgid ""
+"Tip: Start with Strict. If your theme/plugins break (e.g., inline JS), try "
+"Relaxed. Use Custom only if you know CSP syntax."
+msgstr ""
+
+#: src/Admin/Settings.php:325
+msgid "Custom CSP (if mode = Custom)"
+msgstr ""
+
+#: src/Admin/Settings.php:334
+msgid ""
+"Enter a full CSP policy exactly as it should be sent. One directive per line "
+"or separated by semicolons."
+msgstr ""
+
+#: src/Admin/Settings.php:337
+msgid "Examples (click to expand)"
+msgstr ""
+
+#: src/Admin/Settings.php:367
+#, php-format
+msgid ""
+"Leave empty to inherit Network Default (if set). Current Network Default: %s"
+msgstr ""
+
+#: src/Admin/Settings.php:384 src/Admin/Settings.php:416
+#: src/Admin/Settings.php:417
+msgid ".onion / Onionify"
+msgstr ""
+
+#: src/Admin/Settings.php:426 src/Admin/Settings.php:427
+#: src/Admin/Settings.php:728
+msgid "Network Defaults"
+msgstr ""
+
+#: src/Admin/Settings.php:440 src/Admin/Settings.php:487
+#: src/Admin/Settings.php:516 src/Admin/Settings.php:599
+msgid "Sorry, you are not allowed to manage network options."
+msgstr ""
+
+#: src/Admin/Settings.php:447
+msgid ".onion / Onionify (Network)"
+msgstr ""
+
+#: src/Admin/Settings.php:453
+msgid "Site"
+msgstr ""
+
+#: src/Admin/Settings.php:454
+msgid "Clearnet URL"
+msgstr ""
+
+#: src/Admin/Settings.php:455
+msgid ".onion Host"
+msgstr ""
+
+#: src/Admin/Settings.php:478
+msgid "Save Mapping"
+msgstr ""
+
+#: src/Admin/Settings.php:530
+msgid ".onion / Onionify – Network Defaults"
+msgstr ""
+
+#: src/Admin/Settings.php:536
+msgid "Default .onion domain"
+msgstr ""
+
+#: src/Admin/Settings.php:539
+msgid ""
+"This host will be used by sites that did not set their own .onion domain."
+msgstr ""
+
+#: src/Admin/Settings.php:544
+msgid "Onion-Location header (clearnet)"
+msgstr ""
+
+#: src/Admin/Settings.php:547
+msgid "Advertise the onion mirror from clearnet by default."
+msgstr ""
+
+#: src/Admin/Settings.php:552
+msgid "Enable onion privacy/security (default)"
+msgstr ""
+
+#: src/Admin/Settings.php:555
+msgid "Apply stricter privacy/security for .onion requests by default."
+msgstr ""
+
+#: src/Admin/Settings.php:560
+msgid "Disable oEmbed on .onion (default)"
+msgstr ""
+
+#: src/Admin/Settings.php:563
+msgid "Block external embeds for onion visitors by default."
+msgstr ""
+
+#: src/Admin/Settings.php:568
+msgid "CSP mode (default)"
+msgstr ""
+
+#: src/Admin/Settings.php:577
+msgid ""
+"This is the default CSP mode for all sites; individual sites may override it."
+msgstr ""
+
+#: src/Admin/Settings.php:582
+msgid "Custom CSP (default if mode=Custom)"
+msgstr ""
+
+#: src/Admin/Settings.php:585
+msgid ""
+"Provide a full CSP policy used as the default for sites selecting Custom "
+"mode and not overriding locally."
+msgstr ""
+
+#: src/Admin/Settings.php:590
+msgid "Save Defaults"
+msgstr ""
+
+#: src/Admin/Settings.php:689
+msgid "CSP Help"
+msgstr ""
+
+#: src/Admin/Settings.php:690
+msgid "What is CSP?"
+msgstr ""
+
+#: src/Admin/Settings.php:691
+msgid ""
+"Content-Security-Policy controls which resources your site is allowed to "
+"load. It helps avoid unnecessary third-party calls in onion mode."
+msgstr ""
+
+#: src/Admin/Settings.php:693
+msgid "Modes:"
+msgstr ""
+
+#: src/Admin/Settings.php:694
+msgid ""
+"Strict (safest), Relaxed (allows inline JS), Off (no CSP header), Custom "
+"(send exactly what you enter)."
+msgstr ""
+
+#: src/Admin/Settings.php:696
+msgid "Quick examples:"
+msgstr ""
+
+#: src/Admin/Settings.php:709
+msgid ""
+"Tips: If admin bar or theme scripts break, switch to Relaxed or add only "
+"what you need. Avoid external CDNs in onion mode whenever possible."
+msgstr ""
+
+#: src/Admin/Settings.php:727
+msgid "Network Defaults & Mapping"
+msgstr ""
+
+#: src/Admin/Settings.php:729
+msgid ""
+"apply to all sites that did not set their own values. A site may override "
+"any default in its own Settings → .onion / Onionify page."
+msgstr ""
+
+#: src/Admin/Settings.php:731
+msgid "Mapping"
+msgstr ""
+
+#: src/Admin/Settings.php:732
+msgid ""
+"lets you assign a specific .onion host per site. If a site has no mapping, "
+"it may still use the global Default .onion domain."
+msgstr ""
+
+#. Plugin Name of the plugin/theme
+msgid "Onionify"
+msgstr ""
+
+#. Description of the plugin/theme
+msgid ""
+"Serve WordPress cleanly over .onion with URL rewriting, Onion-Location, and "
+"privacy hardening."
+msgstr ""
+
+#. Author of the plugin/theme
+msgid "Ivijan-Stefan Stipić"
+msgstr ""
+
+#. Author URI of the plugin/theme
+msgid "https://www.linkedin.com/in/ivijanstefanstipic/"
+msgstr ""

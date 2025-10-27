@@ -381,10 +381,11 @@ form-action 'self';"
     {
         add_options_page(
             esc_html__('Onionify Settings', 'onionify'),
-            esc_html__('.onion / Onionify', 'onionify'),
+            esc_html__('Onionify', 'onionify'),
             'manage_options',
-            'onionify_settings',
-            [$this, 'renderSettingsPage']
+            'onionify-settings',
+            [$this, 'renderSettingsPage'],
+			1
         );
     }
 

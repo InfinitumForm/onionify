@@ -1,13 +1,27 @@
 <?php
 /**
- * Plugin Name: Onionify
- * Description: Serve WordPress cleanly over .onion with URL rewriting, Onion-Location, and privacy hardening.
- * Version: 1.0.0
- * Author: Ivijan-Stefan Stipić
- * Author URI: https://www.linkedin.com/in/ivijanstefanstipic/
- * License: GPLv2 or later
- * Text Domain: onionify
- * Domain Path: /languages
+ * Plugin Name:  Onionify
+ * Description:  Serve WordPress cleanly over .onion with URL rewriting, Onion-Location, and privacy hardening.
+ * Version:      1.0.2
+ * Author:       Ivijan-Stefan Stipić
+ * Author URI:   https://www.linkedin.com/in/ivijanstefanstipic/
+ * License:      GPLv2 or later
+ * Text Domain:  onionify
+ * Domain Path:  /languages
+ * Network:      true
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 if (!defined('ABSPATH')) {
@@ -17,7 +31,7 @@ if (!defined('ABSPATH')) {
 /* -------------------------------------------------------------------------
  * Constants
  * ---------------------------------------------------------------------- */
-define('ONIONIFY_VERSION', '1.0.0');
+define('ONIONIFY_VERSION', '1.0.2');
 define('ONIONIFY_PLUGIN_FILE', __FILE__);
 define('ONIONIFY_PLUGIN_DIR', rtrim(plugin_dir_path(__FILE__), '/'));
 define('ONIONIFY_PLUGIN_URL', rtrim(plugin_dir_url(__FILE__), '/'));
@@ -81,6 +95,15 @@ if (!defined('ONIONIFY_AUTOLOADER_REGISTERED')) {
         }
     });
 }
+
+\register_activation_hook(ONIONIFY_PLUGIN_FILE, function ($network_wide) {
+    $key = 'onionify_welcome_pending';
+    if (is_multisite() && !empty($network_wide)) {
+        update_site_option($key, 1);
+    } else {
+        update_option($key, 1);
+    }
+});
 
 /* -------------------------------------------------------------------------
  * Bootstrap the plugin after all plugins are loaded
