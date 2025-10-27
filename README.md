@@ -1,15 +1,18 @@
-# 🧅 Tor Onion Support for WordPress
+# 🧅 Onionify – Official WordPress Plugin for Tor .onion Integration
 
-**Clean, conservative, and WordPress.org-compliant support for serving WordPress sites via Tor hidden services (.onion).**
+This is the **official GitHub repository** for the [Onionify WordPress plugin](https://wordpress.org/plugins/onionify/).
 
-Rewrites runtime URLs for `.onion` requests, prevents onion→clearnet leaks, adds optional Onion-Location headers, and introduces privacy-focused hardening (CSP, COEP, X-Frame-Options, oEmbed disable, avatar blocking) for visitors using Tor Browser.
+Onionify provides **clean, privacy-focused, and WordPress.org-compliant support** for serving WordPress sites via Tor hidden services (`.onion`).  
+It safely rewrites runtime URLs for `.onion` requests, prevents onion→clearnet leaks, and includes optional privacy-enhancing headers such as `Onion-Location`, `CSP`, `COEP`, and `X-Frame-Options`.  
+
+Additional features include oEmbed blocking, avatar suppression, and security-focused hardening designed specifically for WordPress environments running on or mirrored through Tor.
 
 ---
 
 ## ⚠ Important Warning
 
 > **BEWARE:**  
-> If you want your WordPress site to exist **only on the darknet** to preserve the anonymity of your server or hosting provider — **this plugin is NOT for you.**  
+> If you want your WordPress site to exist **only on the darknet** to preserve the anonymity of your server or hosting provider - **this plugin is NOT for you.**  
 >  
 > This plugin **does not anonymize** your hosting, DNS, or IP infrastructure.  
 > It simply ensures WordPress behaves correctly when *visitors* use `.onion` addresses.
@@ -30,13 +33,13 @@ For true server anonymity, follow the [Tor Project’s official documentation](h
 - Reroutes internal WP-Cron and REST loopbacks safely to clearnet
 - WP-CLI commands for quick mapping and configuration
 - Fully PHP 7.4–8.3 compatible and PSR-4 autoloaded
-- No core modifications — all WordPress.org-safe hooks
+- No core modifications - all WordPress.org-safe hooks
 
 ---
 
 ## ⚙️ Installation
 
-1. Upload `tor-onion-support` to `/wp-content/plugins/`.
+1. Upload `onionify` to `/wp-content/plugins/`.
 2. Activate from **Plugins → Installed Plugins**.
 3. Open **Settings → Tor / .onion** and enter your `.onion` domain (e.g. `abcd1234xyz.onion`).
 4. Enable optional features:
@@ -136,7 +139,7 @@ Deactivate if you want to keep configuration for later use.
 ## 🕵️ Privacy and Security Notice
 
 - This plugin **does not hide** your IP or hosting provider.
-- It **does not** make your site Tor-only — it simply handles `.onion` visitors correctly.
+- It **does not** make your site Tor-only - it simply handles `.onion` visitors correctly.
 - External HTTP requests (for Tor exit-list verification) are **opt-in** and cached for 24 h.
 - Some hosts block Tor connections entirely; this plugin cannot override such network-level restrictions.
 
