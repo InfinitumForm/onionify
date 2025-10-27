@@ -165,7 +165,7 @@ GPLv2 or later
 **Ivijan-Stefan Stipić**  
 Founder & Lead Developer  
 [INFINITUM FORM®](https://infinitumform.com)  
-📧 infinitumform@gmail.com  
+📧 infinitumform+Onionify@gmail.com  
 🌍 https://infinitumform.com
 
 Specialized in secure WordPress architecture, plugin engineering, and performance optimization with 20+ years of full-stack development experience.

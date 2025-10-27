@@ -21,7 +21,7 @@ We take security very seriously.
 
 If you discover a **vulnerability, security flaw, or potential exploit**, please report it **privately** using one of the following channels:
 
-- 📧 Email: **infinitumform@gmail.com** (subject: `Onionify Security Report`)
+- 📧 Email: **infinitumform+Onionify@gmail.com** (subject: `Onionify Security Report`)
 - 🔐 Optional PGP Key: *(available upon request)*  
 - 🧅 Alternatively, contact securely via the `.onion` service listed in plugin documentation if you prefer Tor-based communication.
 
@@ -80,5 +80,5 @@ If you deploy WordPress via Tor:
 **Maintainer:**  
 🧑‍💻 Ivijan-Stefan Stipić  
 [INFINITUM FORM®](https://infinitumform.com)  
-📧 infinitumform@gmail.com  
+📧 infinitumform+Onionify@gmail.com  
 🔗 https://github.com/InfinitumForm/onionify
