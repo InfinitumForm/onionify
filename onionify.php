@@ -2,9 +2,9 @@
 /**
  * Plugin Name:  Onionify
  * Description:  Serve WordPress cleanly over .onion with URL rewriting, Onion-Location, and privacy hardening.
- * Version:      1.0.2
+ * Version:      1.0.3
  * Author:       Ivijan-Stefan Stipić
- * Author URI:   https://www.linkedin.com/in/ivijanstefanstipic/
+ * Author URI:   https://orcid.org/0009-0008-3924-8683
  * License:      GPLv2 or later
  * Text Domain:  onionify
  * Domain Path:  /languages
@@ -31,7 +31,7 @@ if (!defined('ABSPATH')) {
 /* -------------------------------------------------------------------------
  * Constants
  * ---------------------------------------------------------------------- */
-define('ONIONIFY_VERSION', '1.0.2');
+define('ONIONIFY_VERSION', '1.0.3');
 define('ONIONIFY_PLUGIN_FILE', __FILE__);
 define('ONIONIFY_PLUGIN_DIR', rtrim(plugin_dir_path(__FILE__), '/'));
 define('ONIONIFY_PLUGIN_URL', rtrim(plugin_dir_url(__FILE__), '/'));

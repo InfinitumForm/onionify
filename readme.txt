@@ -4,7 +4,7 @@ Tags: tor, onion, privacy, security, csp
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -205,7 +205,13 @@ Use the WordPress.org support forum for the plugin. For commercial help or custo
 * Added welcome screen and refreshed documentation with GitHub contribution section.
 * Improved design and activation flow.
 
+= 1.0.3 =
+* Minor updates.
+
 == Upgrade Notice ==
+
+= 1.0.3 =
+* Minor updates.
 
 = 1.0.2 =
 * Added welcome screen and refreshed documentation with GitHub contribution section.
