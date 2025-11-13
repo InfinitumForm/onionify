@@ -163,9 +163,9 @@ GPLv2 or later
 ## 🧑‍💻 Author
 
 **Ivijan-Stefan Stipić**  
-Founder & Lead Developer  
+Co-Founder & Lead Developer
 [INFINITUM FORM®](https://infinitumform.com)  
 📧 infinitumform+Onionify@gmail.com  
 🌍 https://infinitumform.com
-
+🌍 https://orcid.org/0009-0008-3924-8683
 Specialized in secure WordPress architecture, plugin engineering, and performance optimization with 20+ years of full-stack development experience.
